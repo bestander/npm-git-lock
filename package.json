@@ -1,0 +1,21 @@
+{
+  "name": "modules-gitter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "git-promise": "^0.2.0",
+    "npmi": "^1.0.0",
+    "es6-promisify": "^1.1.1",
+    "rimraf": "^2.2.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
