@@ -7,9 +7,10 @@
     "test": "test"
   },
   "dependencies": {
+    "del": "^1.1.1",
+    "es6-promisify": "^1.1.1",
     "git-promise": "^0.2.0",
     "npmi": "^1.0.0",
-    "es6-promisify": "^1.1.1",
     "rimraf": "^2.2.8"
   },
   "devDependencies": {},
