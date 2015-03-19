@@ -1,11 +1,8 @@
 {
-  "name": "modules-gitter",
+  "name": "git-wrap",
   "version": "1.0.1",
   "description": "",
   "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
   "dependencies": {
     "del": "^1.1.1",
     "es6-promisify": "^1.1.1",
@@ -21,6 +18,6 @@
     "build": "babel index-es6.js > index.js",
     "prepublish": "npm run build"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Konstantin Raev",
+  "license": "MIT"
 }
