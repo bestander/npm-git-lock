@@ -10,12 +10,16 @@
     "del": "^1.1.1",
     "es6-promisify": "^1.1.1",
     "git-promise": "^0.2.0",
+    "loglevel": "^1.2.0",
     "npmi": "^1.0.0",
-    "rimraf": "^2.2.8"
+    "optimist": "^0.6.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "babel": "^4.7.16"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel index-es6.js > index.js",
+    "prepublish": "npm run build"
   },
   "author": "",
   "license": "ISC"
