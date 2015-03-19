@@ -1,7 +1,8 @@
+#!/usr/bin/env node
+
 "use strict";
 let git = require("git-promise");
 let npmi = require('npmi');
-let path = require('path');
 var del = require('del');
 let fs = require('fs');
 let promisify = require("es6-promisify");
@@ -9,20 +10,23 @@ let log = require('loglevel');
 let readFilePromise = promisify(fs.readFile);
 let npmiPromise = promisify(npmi);
 let delPromise = promisify(del);
-var argv = require('optimist')
+let statPromise = promisify(fs.stat);
+
+let argv = require('optimist')
 .usage('Usage: $0 --repo [git@bitbucket.org:your/git/repository.git] --folder [relative/path/to/folder/with/node_modules] --verbose')
 .describe('verbose', 'Print progress log messages')
-.demand(['repo','folder']).argv;
+.demand(['repo', 'folder']).argv;
 
 
 let packageJson;
 let cwd = process.cwd();
 if (argv.verbose) {
     log.setLevel("debug");
+} else {
+    log.setLevel("info");
 }
-let repo = argv.repo || "git@bitbucket.org:booktrackjsteam/mandrill-packages.git";
-let folder = argv.folder || "test";
-
+let repo = argv.repo;
+let folder = argv.folder;
 
 readFilePromise(`${folder}/package.json`, "utf-8")
 .then(function (packageJsonContent) {
@@ -31,34 +35,53 @@ readFilePromise(`${folder}/package.json`, "utf-8")
     return packageJson;
 })
 .then(function () {
-    log.debug(`Checking if remote ${repo} exists`);
-    process.chdir(`${cwd}/${folder}/node_modules`);
-    return git('git remote -v');
-})
-.then(function (output) {
-    if (output.indexOf(repo) !== -1) {
-        // repo is in remotes, let's pull the required version
-        log.debug("Remote existis, pulling master branch");
-        return git(`git pull ${repo} master`);
-    }
-    throw "Remote does not exist in node_modules folder";
-})
-.then(null,  function () {
-    log.debug(`Remote ${repo} is not present in node_modules/.git repo, removing folder and cloning ${repo}`);
-    process.chdir(`${cwd}/${folder}`);
-    return delPromise([`node_modules/`])
+    return statPromise(`${cwd}/${folder}/node_modules`)
     .then(function () {
-        return git(`clone ${repo} node_modules`);
+        log.debug(`Checking if remote ${repo} exists`);
+        process.chdir(`${cwd}/${folder}/node_modules`);
+        return git('git remote -v')
+        .then(function (remoteCommandOutput) {
+            if (remoteCommandOutput.indexOf(repo) !== -1) {
+                // repo is in remotes, let's pull the required version
+                log.debug("Remote existis, pulling master branch");
+                return git(`git pull ${repo} master`);
+            }
+            throw "remote does not exist"
+        });
+    }, function() {
+        log.debug(`Remote ${repo} is not present in ${cwd}/${folder}/node_modules/.git repo`);
+        log.debug(`Removing ${cwd}/${folder}/node_modules folder`);
+        process.chdir(`${cwd}/${folder}`);
+        return delPromise([`node_modules/`])
+        .then(function () {
+            log.debug(`cloning ${repo}`);
+            return git(`clone ${repo} node_modules`);
+        })
     })
 })
 .then(function () {
     log.debug(`${repo} is in node_modules folder, checkoing out ${packageJson.version} tag`);
     process.chdir(`${cwd}/${folder}/node_modules`);
     return git(`reset --hard ${packageJson.version}`)
+    .then(null, installPackagesTagAndPustToRemote);
 })
 .then(function () {
-    log.debug("Checked out successfully");
-}, function() {
+    process.chdir(`${cwd}`);
+    log.info(`Node_modules are in sync with ${repo} ${packageJson.version}`);
+    process.exit(0);
+})
+.catch(function (error) {
+    try {
+        process.chdir(`${cwd}`);
+        log.debug(`Failed to synchronise node_modules with ${repo} ${packageJson.version}: ${error}`);
+        process.exit(1);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+
+function installPackagesTagAndPustToRemote() {
     log.debug("Requested tag does not exist, remove everything from node_modules and do npm install");
     return delPromise(['**', '!.git/'])
     .then(function () {
@@ -84,15 +107,4 @@ readFilePromise(`${folder}/package.json`, "utf-8")
         log.debug(`Pushing tag ${packageJson.version} to ${repo}`);
         return git(`push ${repo} master --tags`);
     })
-})
-.then(function () {
-    process.chdir(`${cwd}`);
-    log.debug(`Node_modules are in sync with ${repo} ${packageJson.version}`);
-    process.exit(0);
-})
-.catch(function (error) {
-    process.chdir(`${cwd}`);
-    log.debug(`Failed to synchronise node_modules with ${repo} ${packageJson.version}: ${error}`);
-    process.exit(1);
-});
-
+}
