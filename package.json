@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "crypto": "0.0.3",
     "del": "^1.1.1",
     "es6-promisify": "^1.1.1",
     "git-promise": "^0.2.0",
