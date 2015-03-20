@@ -37,7 +37,7 @@ readFilePromise("" + folder + "/package.json", "utf-8").then(function (packageJs
             if (remoteCommandOutput.indexOf(repo) !== -1) {
                 // repo is in remotes, let's pull the required version
                 log.debug("Remote exists, fetching from it");
-                return git("git fetch " + repo);
+                return git("git fetch -t " + repo);
             }
             return cloneRepo();
         }, cloneRepo);
