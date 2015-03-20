@@ -31,7 +31,7 @@ if (argv.verbose) {
 let repo = argv.repo;
 
 
-readFilePromise(`${cwd}/package.json1`, "utf-8")
+readFilePromise(`${cwd}/package.json`, "utf-8")
 .then(function (packageJsonContent) {
     packageJsonSha1 = crypto.createHash('sha1').update(packageJsonContent).digest('hex');
     log.debug(`Sha1 of package.json is ${packageJsonSha1}`);
