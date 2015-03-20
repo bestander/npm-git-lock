@@ -19,7 +19,7 @@
     "prepublish": "npm run build"
   },
   "bin": {
-    "git-wrap": "git-wrap.js"
+    "git-wrap": "index.js"
   },
   "author": "Konstantin Raev",
   "license": "MIT"
