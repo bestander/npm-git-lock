@@ -27,7 +27,7 @@ if (argv.verbose) {
 var repo = argv.repo;
 
 readFilePromise("" + cwd + "/package.json", "utf-8").then(function (packageJsonContent) {
-    packageJsonSha1 = crypto.createHash("sha1").update(packageJsonContent).digest("hex");
+    packageJsonSha1 = crypto.createHash("sha1").update(packageJsonContent).digest("base64");
     log.debug("Sha1 of package.json is " + packageJsonSha1);
     return packageJsonSha1;
 }).then(function () {
@@ -46,7 +46,10 @@ readFilePromise("" + cwd + "/package.json", "utf-8").then(function (packageJsonC
 }).then(function () {
     log.debug("" + repo + " is in node_modules cwd, checking out " + packageJsonSha1 + " tag");
     process.chdir("" + cwd + "/node_modules");
-    return git("reset --hard " + packageJsonSha1).then(null, installPackagesTagAndPustToRemote);
+    return git("checkout " + packageJsonSha1).then(function () {
+        log.debug("Cleanup checked out commit");
+        return git("clean -d -x -f");
+    })["catch"](installPackagesTagAndPustToRemote);
 }).then(function () {
     process.chdir("" + cwd);
     log.info("Node_modules are in sync with " + repo + " " + packageJsonSha1);
