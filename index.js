@@ -48,7 +48,7 @@ readFilePromise("" + cwd + "/package.json", "utf-8").then(function (packageJsonC
     process.chdir("" + cwd + "/node_modules");
     return git("checkout " + packageJsonSha1).then(function () {
         log.debug("Cleanup checked out commit");
-        return git("clean -d -x -f");
+        return git("clean -df");
     })["catch"](installPackagesTagAndPustToRemote);
 }).then(function () {
     process.chdir("" + cwd);
