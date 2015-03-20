@@ -46,18 +46,9 @@ readFilePromise(`${folder}/package.json`, "utf-8")
                 log.debug("Remote existis, pulling master branch");
                 return git(`git pull ${repo} master`);
             }
-            throw "remote does not exist"
-        });
-    }, function() {
-        log.debug(`Remote ${repo} is not present in ${cwd}/${folder}/node_modules/.git repo`);
-        log.debug(`Removing ${cwd}/${folder}/node_modules folder`);
-        process.chdir(`${cwd}/${folder}`);
-        return delPromise([`node_modules/`])
-        .then(function () {
-            log.debug(`cloning ${repo}`);
-            return git(`clone ${repo} node_modules`);
-        })
-    })
+            return cloneRepo();
+        }, cloneRepo);
+    }, cloneRepo)
 })
 .then(function () {
     log.debug(`${repo} is in node_modules folder, checkoing out ${packageJson.version} tag`);
@@ -80,6 +71,16 @@ readFilePromise(`${folder}/package.json`, "utf-8")
     }
 });
 
+function cloneRepo() {
+    log.debug(`Remote ${repo} is not present in ${cwd}/${folder}/node_modules/.git repo`);
+    log.debug(`Removing ${cwd}/${folder}/node_modules folder`);
+    process.chdir(`${cwd}/${folder}`);
+    return delPromise([`node_modules/`])
+    .then(function () {
+        log.debug(`cloning ${repo}`);
+        return git(`clone ${repo} node_modules`);
+    })
+}
 
 function installPackagesTagAndPustToRemote() {
     log.debug("Requested tag does not exist, remove everything from node_modules and do npm install");
