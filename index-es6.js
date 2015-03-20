@@ -94,7 +94,10 @@ function installPackagesTagAndPustToRemote() {
     return delPromise(['**', '!.git/'])
     .then(function () {
         let options = {
-            forceInstall: false
+            forceInstall: false,
+            npmLoad: {
+                loglevel: argv.verbose ? 'info' : 'silent'
+            }
         };
         process.chdir(`${cwd}`);
         return npmiPromise(options);

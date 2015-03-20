@@ -78,7 +78,10 @@ function installPackagesTagAndPustToRemote() {
     log.debug("Requested tag does not exist, remove everything from node_modules and do npm install");
     return delPromise(["**", "!.git/"]).then(function () {
         var options = {
-            forceInstall: false
+            forceInstall: false,
+            npmLoad: {
+                loglevel: argv.verbose ? "info" : "silent"
+            }
         };
         process.chdir("" + cwd);
         return npmiPromise(options);
