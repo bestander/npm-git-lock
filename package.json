@@ -1,6 +1,6 @@
 {
   "name": "git-wrap",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "dependencies": {
@@ -17,6 +17,9 @@
   "scripts": {
     "build": "babel index-es6.js > index.js",
     "prepublish": "npm run build"
+  },
+  "bin": {
+    "git-wrap": "git-wrap.js"
   },
   "author": "Konstantin Raev",
   "license": "MIT"
