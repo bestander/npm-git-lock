@@ -43,15 +43,15 @@ readFilePromise(`${folder}/package.json`, "utf-8")
         .then(function (remoteCommandOutput) {
             if (remoteCommandOutput.indexOf(repo) !== -1) {
                 // repo is in remotes, let's pull the required version
-                log.debug("Remote existis, pulling master branch");
-                return git(`git pull ${repo} master`);
+                log.debug("Remote exists, fetching from it");
+                return git(`git fetch ${repo}`);
             }
             return cloneRepo();
         }, cloneRepo);
     }, cloneRepo)
 })
 .then(function () {
-    log.debug(`${repo} is in node_modules folder, checkoing out ${packageJson.version} tag`);
+    log.debug(`${repo} is in node_modules folder, checking out ${packageJson.version} tag`);
     process.chdir(`${cwd}/${folder}/node_modules`);
     return git(`reset --hard ${packageJson.version}`)
     .then(null, installPackagesTagAndPustToRemote);
