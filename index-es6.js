@@ -96,7 +96,7 @@ function installPackagesTagAndPustToRemote() {
         let options = {
             forceInstall: false,
             npmLoad: {
-                loglevel: argv.verbose ? 'info' : 'silent'
+                loglevel: argv.verbose ? 'warn' : 'silent'
             }
         };
         process.chdir(`${cwd}`);
