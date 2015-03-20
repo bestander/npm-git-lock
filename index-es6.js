@@ -59,10 +59,9 @@ readFilePromise(`${cwd}/package.json`, "utf-8")
     return git(`checkout ${packageJsonSha1}`)
     .then(function () {
         log.debug(`Cleanup checked out commit`);
-        return git('clean -d -x -f');
+        return git('clean -df');
     })
-    .catch(installPackagesTagAndPustToRemote)
-
+    .catch(installPackagesTagAndPustToRemote);
 })
 .then(function () {
     process.chdir(`${cwd}`);
