@@ -15,7 +15,7 @@ let delPromise = promisify(del);
 let statPromise = promisify(fs.stat);
 
 let argv = require('optimist')
-.usage('Usage: $0 --repo [git@bitbucket.org:your/git/repository.git] --verbose')
+.usage('Usage: $0 --repo [git@bitbucket.org:your/dedicated/node_modules/git/repository.git] --verbose')
 .describe('verbose', '[-v] Print progress log messages')
 .describe('repo', 'git url to repository with node_modules content')
 .alias('v', 'verbose')
