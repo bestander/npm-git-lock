@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-"use strict";
-let git = require("git-promise");
+'use strict';
+let git = require('git-promise');
 let npmi = require('npmi');
 var del = require('del');
 let fs = require('fs');
-let promisify = require("es6-promisify");
+let promisify = require('es6-promisify');
 let log = require('loglevel');
 let crypto = require('crypto');
 
@@ -22,18 +22,20 @@ let argv = require('optimist')
 .demand(['repo']).argv;
 
 let packageJsonSha1;
+let packageJsonVersion;
 let cwd = process.cwd();
 if (argv.verbose) {
-    log.setLevel("debug");
+    log.setLevel('debug');
 } else {
-    log.setLevel("info");
+    log.setLevel('info');
 }
 let repo = argv.repo;
 
 
-readFilePromise(`${cwd}/package.json`, "utf-8")
+readFilePromise(`${cwd}/package.json`, 'utf-8')
 .then(function (packageJsonContent) {
     packageJsonSha1 = crypto.createHash('sha1').update(packageJsonContent).digest('base64');
+    packageJsonVersion = packageJsonContent.version;
     log.debug(`Sha1 of package.json is ${packageJsonSha1}`);
     return packageJsonSha1;
 })
@@ -46,7 +48,7 @@ readFilePromise(`${cwd}/package.json`, "utf-8")
         .then(function (remoteCommandOutput) {
             if (remoteCommandOutput.indexOf(repo) !== -1) {
                 // repo is in remotes, let's pull the required version
-                log.debug("Remote exists, fetching from it");
+                log.debug('Remote exists, fetching from it');
                 return git(`git fetch -t ${repo}`);
             }
             return cloneRepo();
@@ -90,7 +92,7 @@ function cloneRepo() {
 }
 
 function installPackagesTagAndPustToRemote() {
-    log.debug("Requested tag does not exist, remove everything from node_modules and do npm install");
+    log.debug('Requested tag does not exist, remove everything from node_modules and do npm install');
     return delPromise(['**', '!.git/'])
     .then(function () {
         let options = {
@@ -103,15 +105,15 @@ function installPackagesTagAndPustToRemote() {
         return npmiPromise(options);
     })
     .then(function () {
-        log.debug("All packages installed");
+        log.debug('All packages installed');
         process.chdir(`${cwd}/node_modules`);
         return git(`add .`);
     })
     .then(function () {
-        return git(`commit -a -m "updated package.json, freezing changes"`);
+        return git(`commit -a -m 'sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmi.NPM_VERSION}'`);
     })
     .then(function () {
-        log.debug("Committed, adding tag");
+        log.debug('Committed, adding tag');
         return git(`tag ${packageJsonSha1}`);
     })
     .then(function () {
