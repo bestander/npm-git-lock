@@ -48,7 +48,7 @@ readFilePromise("" + cwd + "/package.json", "utf-8").then(function (packageJsonC
 }).then(function () {
     log.debug("" + repo + " is in node_modules cwd, checking out " + packageJsonSha1 + " tag");
     process.chdir("" + cwd + "/node_modules");
-    return git("checkout " + packageJsonSha1).then(function () {
+    return git("checkout tags/" + packageJsonSha1).then(function () {
         log.debug("Cleanup checked out commit");
         return git("clean -df");
     })["catch"](installPackagesTagAndPustToRemote);
