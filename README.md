@@ -32,7 +32,7 @@ You need it to get reliable and reproducible builds of your Node.js/io.js projec
 ### [Shrinkwrapping](https://docs.npmjs.com/cli/shrinkwrap) 
 is the recommended option to "lock down" dependency tree of your application.  
 I have been using it throughout 2014 and there are too many inconveniences that accompany this technique:  
-1. Dependency on npm servers availability at every CI build. NPM [availability](http://status.npmjs.org/) is quite good in 2015 [see good talk](http://nodesummit.com/media/node-js-at-scale/) but you don't want to have another moving part when doing an urgent production build.  
+1. Dependency on npm servers availability at every CI build. NPM [availability](http://status.npmjs.org/) is quite good in 2015 [watch a good talk](http://nodesummit.com/media/node-js-at-scale/) but you don't want to have another moving part when doing an urgent production build.  
 2. Managing of npm-shrinkwrap.json is not straightforward as of npm@2.4. It is promising to improve though.  
 3. Even though npm does not allow force updating packages without changing the version, packages can still be removed from the repository and you don't want to find that out when doing a production deployment.  
 4. There are lots of other complex variable things about shrinkwrapping like optional dependencies and the coming changes in npm@3.0 like flat node_modules folder structure.   
