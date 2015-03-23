@@ -18,6 +18,7 @@ var statPromise = promisify(fs.stat);
 var argv = require("optimist").usage("Usage: $0 --repo [git@bitbucket.org:your/dedicated/node_modules/git/repository.git] --verbose").describe("verbose", "[-v] Print progress log messages").describe("repo", "git url to repository with node_modules content").alias("v", "verbose").demand(["repo"]).argv;
 
 var packageJsonSha1 = undefined;
+var packageJsonVersion = undefined;
 var cwd = process.cwd();
 if (argv.verbose) {
     log.setLevel("debug");
@@ -28,6 +29,7 @@ var repo = argv.repo;
 
 readFilePromise("" + cwd + "/package.json", "utf-8").then(function (packageJsonContent) {
     packageJsonSha1 = crypto.createHash("sha1").update(packageJsonContent).digest("base64");
+    packageJsonVersion = packageJsonContent.version;
     log.debug("Sha1 of package.json is " + packageJsonSha1);
     return packageJsonSha1;
 }).then(function () {
@@ -90,7 +92,7 @@ function installPackagesTagAndPustToRemote() {
         process.chdir("" + cwd + "/node_modules");
         return git("add .");
     }).then(function () {
-        return git("commit -a -m \"updated package.json, freezing changes\"");
+        return git("commit -a -m 'sealing package.json dependencies of version " + packageJsonVersion + ", using npm " + npmi.NPM_VERSION + "'");
     }).then(function () {
         log.debug("Committed, adding tag");
         return git("tag " + packageJsonSha1);
