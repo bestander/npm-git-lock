@@ -2,11 +2,12 @@
 
 A CLI tool to lock all node_modules dependencies to a separate git repository.
 
+Read a [post](https://medium.com/@bestander_nz/my-node-modules-are-in-git-again-4fb18f5671a) why you may need it.
 
 ## Features
 
 - Tracks changes in package.json file
-- When a change is found makes a clean install of all dependencies and commits and pushes to a remote repository
+- When a change is found makes a clean install of all dependencies and commits and pushes node_modules to a remote repository
 - Works independently from npm and can be used only on CI server keeping dev environment simpler
 
 ## How to use
@@ -50,10 +51,11 @@ Nonetheless I think it is a more reliable option though with a few annoying deta
 
 The algorithm is simple:  
 1. Check if node_modules folder is present in the working directory  
-2. If it exists and there is a git repository in it, check if the remote repository from --repo argument is present  
+2. If node_modules exists check if there is a separate git repository in it  
 3. Calculate sha1 hash from package.json in base64 format  
-4. If remote repo from [2] has a commit tagged with sha1 from [3] then check it out clean
-5. Otherwise remove everything from node_modules, do a clean `npm install`, commit, tag with sha1 from [3] and push to remote repo
+4. If remote repo from [2] has a commit tagged with sha1 from [3] then check it out clean, no npm install is required  
+5. Otherwise remove everything from node_modules, do a clean npm install, commit, tag with sha1 from [3] and push to remote repo  
+6. Next time you build with the same package.json, it is guaranteed that you get node_modules from the first run  
 
 After this you end up with a reliable and reproducible source controlled node_modules folder.      
 If there is any change in package.json, a fresh `npm install` will be done once.    
@@ -62,11 +64,12 @@ If there is no change, npm command is not touched and your CI build is fast.
 ## Amazing features  
 
 With this package you get:  
-1. Minimum dependency on `npm` servers availability for repeated builds which is very common for CI systems    
-2. No noise in your main project Pull Requests, all packages are committed to a separate `git` repository that does not need to be reviewed or maintained  
-3. If separate `git` repository for packages gets too large and slows down your builds after a few years, you can just create a new one  
-4. Using it does not interfere with the recommended npm workflow, you can use it only on your CI system with no side effects for your dev environment  
-5. You can have different packages repositories for different OS. Your CI is likely to be linux while your dev machines may be mac or windows. You can set up 3 repositories for them and use them independently.
+1. Minimum dependency on npm servers availability for repeated builds which is very common for CI systems  
+2. No noise in your main project Pull Requests, all packages are committed to a separate git repository that does not need to be reviewed or maintained  
+3. If the separate git repository for packages gets too large and slows down your builds after a few years, you can just create a new one, saving the old one for patches if you need  
+4. Using it does not interfere with the recommended npm workflow, you can use it only on your CI system with no side effects for your dev environment or mix it with shrinkwrapping  
+5. You can have different node_modules repositories for different OS. Your CI is likely to be linux while your dev machines may be mac or windows. You can set up 3 repositories for them and use them independently.  
+6. And it is blazing fast  
 
 ## Contribution
 
