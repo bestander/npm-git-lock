@@ -1,8 +1,8 @@
 {
   "name": "npm-git-lock",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "A CLI tool to lock all node_modules dependencies to a separate git repository.",
-  "main": "index.js",
+  "main": "cli.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/bestander/npm-git-lock.git"
@@ -13,17 +13,17 @@
     "git-promise": "^0.2.0",
     "loglevel": "^1.2.0",
     "npmi": "^1.0.1",
-    "optimist": "^0.6.1"
-  },
-  "devDependencies": {
+    "optimist": "^0.6.1",
     "babel": "^4.7.16"
   },
+  "devDependencies": {
+    "mocha": "^2.2.1"
+  },
   "scripts": {
-    "build": "babel index-es6.js > index.js",
-    "prepublish": "npm run build"
+    "test": "mocha --compilers es6:babel/register"
   },
   "bin": {
-    "npm-git-lock": "index.js"
+    "npm-git-lock": "cli.js"
   },
   "author": "Konstantin Raev",
   "license": "MIT"
