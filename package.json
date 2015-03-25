@@ -17,7 +17,9 @@
     "babel": "^4.7.16"
   },
   "devDependencies": {
-    "mocha": "^2.2.1"
+    "chai": "^2.1.2",
+    "mocha": "^2.2.1",
+    "proxyquire": "^1.4.0"
   },
   "scripts": {
     "test": "mocha --compilers es6:babel/register"
