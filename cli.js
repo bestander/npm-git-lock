@@ -13,7 +13,7 @@ var argv = require('optimist')
 
 var checkoutNodeModules = require('./src/checkout-node-modules');
 
-checkoutNodeModules(argv.repo, argv.verbose)
+checkoutNodeModules(process.cwd(), argv.repo, argv.verbose)
 .then(function () {
     process.exit(0);
 })

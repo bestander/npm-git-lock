@@ -12,16 +12,13 @@ let npmiPromise = promisify(npmi);
 let delPromise = promisify(del);
 let statPromise = promisify(fs.stat);
 
-let packageJsonSha1;
-let packageJsonVersion;
-let cwd = process.cwd();
 
-module.exports = (repo, verbose) => {
+module.exports = (cwd, repo, verbose) => {
+    let packageJsonSha1;
+    let packageJsonVersion;
     log.setLevel(verbose ? 'debug': 'info');
-    console.log("ARE WE THERE?", fs.readFile);
     return readFilePromise(`${cwd}/package.json`, 'utf-8')
     .then((packageJsonContent) => {
-        console.log("WE ARE", packageJsonContent);
         packageJsonSha1 = crypto.createHash('sha1').update(packageJsonContent).digest('base64');
         packageJsonVersion = packageJsonContent.version;
         log.debug(`Sha1 of package.json is ${packageJsonSha1}`);
@@ -40,8 +37,9 @@ module.exports = (repo, verbose) => {
                     return git(`git fetch -t ${repo}`);
                 }
                 return cloneRepo();
-            }, cloneRepo);
-        }, cloneRepo)
+            });
+        })
+        .catch(cloneRepo)
     })
     .then(() => {
         log.debug(`${repo} is in node_modules cwd, checking out ${packageJsonSha1} tag`);
@@ -59,7 +57,8 @@ module.exports = (repo, verbose) => {
     })
     .catch((error) => {
         process.chdir(`${cwd}`);
-        log.debug(`Failed to synchronise node_modules with ${repo}: ${error}`);
+        log.info(`Failed to synchronise node_modules with ${repo}: ${error}`);
+        throw error;
     });
 
     function cloneRepo() {
@@ -75,7 +74,10 @@ module.exports = (repo, verbose) => {
 
     function installPackagesTagAndPustToRemote() {
         log.debug('Requested tag does not exist, remove everything from node_modules and do npm install');
-        return delPromise(['**', '!.git/'])
+        return git(`checkout master`)
+        .then(() => {
+            return delPromise(['**', '!.git/'])
+        })
         .then(() => {
             let options = {
                 forceInstall: false,
