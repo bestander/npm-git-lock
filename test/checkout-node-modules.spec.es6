@@ -35,6 +35,8 @@ describe(`npm-git-lock`, function() {
 
         // set up git in remote repo for npm moduels
         process.chdir(`${cwd}/test/${nodeModulesRemoteRepo}`);
+        execSync(`git config user.email "testing@npm-git-lock"`);
+        execSync(`git config user.name "NPM GIT LOCK"`);
         execSync(`git init`);
         execSync(`touch file1`);
         execSync(`git add .`);
