@@ -71,6 +71,23 @@ With this package you get:
 5. You can have different node_modules repositories for different OS. Your CI is likely to be linux while your dev machines may be mac or windows. You can set up 3 repositories for them and use them independently.  
 6. And it is blazing fast  
 
+## Troubleshoot
+
+If you see this kind of error in your CI.  
+
+```
+Cloning into 'node_modules'...
+done.
+*** Please tell me who you are.
+Run
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+fatal: empty ident name (for <travis@testing-worker-linux-docker-2b1f3404-3362-linux-9.prod.travis-ci.org>) not allowed
+```
+
+You need to configure `user.email` and `user.name` in the environment as shown in the error message.  
 
 ## Contribution
 
