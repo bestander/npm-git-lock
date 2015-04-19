@@ -74,9 +74,6 @@ With this package you get:
 ## Contribution
 
 Please give me your feedback and send Pull Requests.  
-Source code is in `index-es6.js` which is running with no compilation on io.js@1.5.  
-`index.js` is compiled with command `npm run build`.    
-Unit tests are coming and welcome, I plan to add integration unit tests with a local git repo.
 
 ## License MIT
 
