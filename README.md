@@ -88,6 +88,7 @@ fatal: empty ident name (for <travis@testing-worker-linux-docker-2b1f3404-3362-l
 ```
 
 You need to configure `user.email` and `user.name` in the environment as shown in the error message.  
+Just add those two commands before `npm-git-lock` call.
 
 ## Contribution
 

@@ -38,7 +38,7 @@ describe(`npm-git-lock`, function() {
         execSync(`git init`);
         execSync(`touch file1`);
         execSync(`git add .`);
-        execSync(`git commit --author="npm-git-lock <>" -a -m "first commit" `);
+        execSync(`git commit -a -m "first commit" `);
         execSync(`git config --bool core.bare true`);
     });
 
@@ -118,7 +118,7 @@ describe(`npm-git-lock`, function() {
         process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
         execSync(`touch file2`);
         execSync(`git add .`);
-        execSync(`git commit --author="npm-git-lock <>" -a -m "node_modules is cached"`);
+        execSync(`git commit -a -m "node_modules is cached"`);
         let packageJsonSha1 = crypto.createHash(`sha1`).update(packageJson).digest(`base64`);
         execSync(`git tag ${packageJsonSha1}`);
         execSync(`git push origin master --tags`);
@@ -126,7 +126,7 @@ describe(`npm-git-lock`, function() {
         // add some change new to local node_modules repo
         execSync(`touch file3`);
         execSync(`git add .`);
-        execSync(`git commit --author="npm-git-lock <>" -a -m "another commit that should be ignored" `);
+        execSync(`git commit -a -m "another commit that should be ignored" `);
         execSync(`git tag SOMERANDOMTAG`);
 
         checkoutNodeMoudles(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
