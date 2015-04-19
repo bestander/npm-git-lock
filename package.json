@@ -1,6 +1,6 @@
 {
   "name": "npm-git-lock",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A CLI tool to lock all node_modules dependencies to a separate git repository.",
   "main": "cli.js",
   "repository": {
