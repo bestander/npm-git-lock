@@ -74,6 +74,7 @@ With this package you get:
 ## Contribution
 
 Please give me your feedback and send Pull Requests.  
+Unit tests rely on `require(`child_process`).execSync` command that works in node 0.11+.  
 
 ## License MIT
 
