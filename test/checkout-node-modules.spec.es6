@@ -1,3 +1,4 @@
+'use strict';
 let fs = require(`fs`);
 var execSync = require(`child_process`).execSync;
 let git = require(`git-promise`);
