@@ -38,7 +38,7 @@ describe(`npm-git-lock`, function() {
         execSync(`git init`);
         execSync(`touch file1`);
         execSync(`git add .`);
-        execSync(`git commit -a -m "first commit" --author "npm-git-lock <bob@example.com>"`);
+        execSync(`git commit -a -m "first commit" --author="npm-git-lock <bob@example.com>"`);
         execSync(`git config --bool core.bare true`);
     });
 
@@ -126,7 +126,7 @@ describe(`npm-git-lock`, function() {
         // add some change new to local node_modules repo
         execSync(`touch file3`);
         execSync(`git add .`);
-        execSync(`git commit -a -m "another commit that should be ignored" --author "npm-git-lock <bob@example.com>"`);
+        execSync(`git commit -a -m "another commit that should be ignored" --author="npm-git-lock <bob@example.com>"`);
         execSync(`git tag SOMERANDOMTAG`);
 
         checkoutNodeMoudles(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
