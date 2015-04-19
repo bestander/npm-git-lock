@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 "use strict";
 
-// enabling automatic ES6-ES5 compilation for the whole application
-require("babel/register");
-
 var argv = require('optimist')
 .usage('Usage: $0 --repo [git@bitbucket.org:your/dedicated/node_modules/git/repository.git] --verbose')
 .describe('verbose', '[-v] Print progress log messages')
@@ -11,7 +8,7 @@ var argv = require('optimist')
 .alias('v', 'verbose')
 .demand(['repo']).argv;
 
-var checkoutNodeModules = require('./src/checkout-node-modules');
+var checkoutNodeModules = require('./lib/checkout-node-modules');
 
 checkoutNodeModules(process.cwd(), argv.repo, argv.verbose)
 .then(function () {
