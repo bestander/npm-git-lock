@@ -15,10 +15,16 @@ Read a [post](https://medium.com/@bestander_nz/my-node-modules-are-in-git-again-
 ## How to use
 
 ```
-sudo npm install -g npm-git-lock  
+sudo npm install -g npm-git-lock
 cd [your work directory]  
 npm-git-lock --repo [git@bitbucket.org:your/dedicated/node_modules/git/repository.git] -v
 
+```
+
+If you don't want to depend on NPM connectivity when installing this module, you can install directly from github:
+
+```
+sudo npm install -g bestander/npm-git-lock
 ```
 
 
