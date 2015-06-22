@@ -13,13 +13,21 @@
     "git-promise": "^0.2.0",
     "loglevel": "^1.2.0",
     "npmi": "^1.0.1",
-    "optimist": "^0.6.1",
-    "babel": "^4.7.16"
+    "optimist": "^0.6.1"
   },
   "devDependencies": {
     "chai": "^2.1.2",
-    "mocha": "^2.2.1"
+    "mocha": "^2.2.1",
+    "babel": "^4.7.16"
   },
+  "bundledDependencies": [
+    "del",
+    "es6-promisify",
+    "git-promise",
+    "loglevel",
+    "npmi",
+    "optimist"
+  ],
   "scripts": {
     "test": "mocha --compilers es6:babel/register",
     "compile": "babel -d lib/ src/",
