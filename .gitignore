@@ -1,2 +1,3 @@
-/node_modules/babel
+/node_modules/
+/lib/
 .idea

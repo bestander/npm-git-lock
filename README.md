@@ -24,7 +24,7 @@ npm-git-lock --repo [git@bitbucket.org:your/dedicated/node_modules/git/repositor
 If you don't want to depend on NPM connectivity when installing this module, you can install directly from github:
 
 ```
-sudo npm install -g bestander/npm-git-lock
+sudo npm install -g https://raw.githubusercontent.com/bestander/npm-git-lock/master/npm-git-lock-2.1.6.tgz
 ```
 
 
