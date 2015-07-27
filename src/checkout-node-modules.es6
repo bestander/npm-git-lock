@@ -19,7 +19,8 @@ module.exports = (cwd, repo, verbose) => {
     log.setLevel(verbose ? `debug`: `info`);
     return readFilePromise(`${cwd}/package.json`, `utf-8`)
     .then((packageJsonContent) => {
-        packageJsonSha1 = crypto.createHash(`sha1`).update(packageJsonContent).digest(`base64`);
+        // replace / in hash with _ because git does not allow leading / in tags
+        packageJsonSha1 = crypto.createHash(`sha1`).update(packageJsonContent).digest(`base64`).replace(/\//g, "_");
         packageJsonVersion = packageJsonContent.version;
         log.debug(`Sha1 of package.json is ${packageJsonSha1}`);
         return packageJsonSha1;

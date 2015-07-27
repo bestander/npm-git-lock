@@ -1,6 +1,6 @@
 {
   "name": "npm-git-lock",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "A CLI tool to lock all node_modules dependencies to a separate git repository.",
   "main": "cli.js",
   "repository": {
@@ -18,7 +18,8 @@
   "devDependencies": {
     "chai": "^2.1.2",
     "mocha": "^2.2.1",
-    "babel": "^4.7.16"
+    "babel": "^4.7.16",
+    "rewire": "^2.3.4"
   },
   "bundledDependencies": [
     "del",
@@ -31,7 +32,8 @@
   "scripts": {
     "test": "mocha --compilers es6:babel/register",
     "compile": "babel -d lib/ src/",
-    "prepublish": "npm run compile"
+    "prepublish": "npm run compile",
+    "pack": "npm pack"
   },
   "bin": {
     "npm-git-lock": "cli.js"
