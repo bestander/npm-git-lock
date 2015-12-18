@@ -95,7 +95,7 @@ module.exports = (cwd, repo, verbose) => {
             return git(`add .`);
         })
         .then(() => {
-            return git(`commit -a -m 'sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmi.NPM_VERSION}'`);
+            return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmi.NPM_VERSION}"`);
         })
         .then(() => {
             log.debug(`Committed, adding tag`);
