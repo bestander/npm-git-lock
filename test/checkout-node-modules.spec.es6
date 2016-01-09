@@ -63,7 +63,10 @@ describe(`npm-git-lock`, function() {
         });
         fs.writeFileSync(`package.json`, packageJson);
 
-        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
+        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true}
+        )
         .then(() => {
             process.chdir(`${cwd}/test/${nodeModulesRemoteRepo}`);
             return git(`show-ref --tags`, (output) => {
@@ -128,7 +131,10 @@ describe(`npm-git-lock`, function() {
         execSync(`git commit -a -m "another commit that should be ignored" `);
         execSync(`git tag SOMERANDOMTAG`);
 
-        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
+        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true
+        })
         .then(() => {
             // there is the same tag in project`s node_modules
             process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
@@ -170,7 +176,10 @@ describe(`npm-git-lock`, function() {
         let packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(packageJson).digest(`base64`);
         execSync(`git tag ${packageJsonSha1}`);
 
-        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
+        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true
+        })
         .then(() => {
             // there is the same tag in project`s node_modules
             process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
@@ -224,7 +233,10 @@ describe(`npm-git-lock`, function() {
         let packageJsonSha1 = fakeHash.replace(/\//g, "_");
         execSync(`git tag ${packageJsonSha1}`);
 
-        checkoutNodeModules(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
+        checkoutNodeModules(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true}
+        )
         .then(() => {
             // there is the same tag in project`s node_modules
             process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);

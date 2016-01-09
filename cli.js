@@ -10,7 +10,7 @@ var argv = require('optimist')
 
 var checkoutNodeModules = require('./lib/checkout-node-modules');
 
-checkoutNodeModules(process.cwd(), argv.repo, argv.verbose)
+checkoutNodeModules(process.cwd(), {repo: argv.repo, verbose: argv.verbose})
 .then(function () {
     process.exit(0);
 })

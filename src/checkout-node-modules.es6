@@ -13,7 +13,7 @@ let delPromise = promisify(del);
 let statPromise = promisify(fs.stat);
 
 
-module.exports = (cwd, repo, verbose) => {
+module.exports = (cwd, {repo, verbose}) => {
     let packageJsonSha1;
     let packageJsonVersion;
     log.setLevel(verbose ? `debug`: `info`);
