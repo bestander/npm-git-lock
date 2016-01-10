@@ -1,6 +1,7 @@
 {
   "name": "fake-platform-specific-module",
   "version": "1.0.0",
+  "description": "A fake module with a custom install script that creates an extra file.",
   "dependencies": {
   },
   "devDependencies": {

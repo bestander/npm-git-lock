@@ -1,19 +1,19 @@
 'use strict';
 let git = require(`git-promise`);
-let npmi = require(`npmi`);
+let exec = require(`exec-then`);
 let del = require(`del`);
 let fs = require(`fs`);
 let promisify = require(`es6-promisify`);
 let log = require(`loglevel`);
 let crypto = require(`crypto`);
+let uniq = require(`lodash/array/uniq`);
 
 let readFilePromise = promisify(fs.readFile);
-let npmiPromise = promisify(npmi);
 let delPromise = promisify(del);
 let statPromise = promisify(fs.stat);
 
+module.exports = (cwd, {repo, verbose, crossPlatform}) => {
 
-module.exports = (cwd, {repo, verbose}) => {
     let packageJsonSha1;
     let packageJsonVersion;
     log.setLevel(verbose ? `debug`: `info`);
@@ -50,6 +50,11 @@ module.exports = (cwd, {repo, verbose}) => {
             log.debug(`Cleanup checked out commit`);
             return git(`clean -df`);
         })
+        .then(() => {
+            if (crossPlatform) {
+                return rebuildAndIgnorePlatformSpecific();
+            }
+        })
         .catch(installPackagesTagAndPustToRemote);
     })
     .then(() => {
@@ -73,6 +78,43 @@ module.exports = (cwd, {repo, verbose}) => {
         })
     }
 
+    function gitGetUntracked() {
+        return git(`status --porcelain --untracked-files=all`)
+        .then(result => {
+            return result.split('\n').filter(line => line && line.startsWith('??')).map(line => line.substr(3));
+        })
+    }
+
+    function npmRunCommand(cmd, args) {
+        let loglevel = [`--log-level=${verbose ? 'warn' : 'silent'}`];
+        return exec(['npm', cmd].concat(loglevel).concat(args), {verbose}, (std) => {
+            return std.stdout.split('\n');
+        });
+    }
+
+    function rebuildAndIgnorePlatformSpecific() {
+        log.debug(`Rebuilding package in ${cwd}`);
+        process.chdir(`${cwd}`);
+        return npmRunCommand('rebuild')
+        .then(() => {
+            process.chdir(`${cwd}/node_modules`);
+            return gitGetUntracked();
+        })
+        .then((files) => {
+            let ignored = [];
+            try {
+                ignored = fs.readFileSync('.gitignore', {encoding: 'utf8'}).split('\n');
+            } catch (e) {
+                // ignore errors while reading .gitignore
+            }
+            ignored = ignored.concat(files);
+            ignored.sort();
+            ignored = uniq(ignored);
+            fs.writeFileSync('.gitignore', ignored.join('\n'), {encoding: 'utf8'});
+            return git(`add .gitignore`);
+        })
+    }
+
     function installPackagesTagAndPustToRemote() {
         log.debug(`Requested tag does not exist, remove everything from node_modules and do npm install`);
         return git(`checkout master`)
@@ -80,14 +122,8 @@ module.exports = (cwd, {repo, verbose}) => {
             return delPromise([`**`, `!.git/`])
         })
         .then(() => {
-            let options = {
-                forceInstall: false,
-                npmLoad: {
-                    loglevel: verbose ? `warn` : `silent`
-                }
-            };
             process.chdir(`${cwd}`);
-            return npmiPromise(options);
+            return npmRunCommand(`install`, crossPlatform ? ['--ignore-scripts'] : []);
         })
         .then(() => {
             log.debug(`All packages installed`);
@@ -95,7 +131,19 @@ module.exports = (cwd, {repo, verbose}) => {
             return git(`add .`);
         })
         .then(() => {
-            return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmi.NPM_VERSION}"`);
+            if (crossPlatform) {
+                log.debug(`Cross-platform`);
+                return rebuildAndIgnorePlatformSpecific();
+            } else {
+                log.debug(`Not cross-platform`);
+            }
+        })
+        .then(() => {
+            return npmRunCommand(`--version`);
+        })
+        .then((npmVersion) => {
+            process.chdir(`${cwd}/node_modules`);
+            return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmVersion[0]}"`);
         })
         .then(() => {
             log.debug(`Committed, adding tag`);

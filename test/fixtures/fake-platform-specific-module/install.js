@@ -2,6 +2,7 @@ var fs = require('fs');
 var os = require('os');
 var path = require('path');
 
+console.log('Running platform-specific build');
 var fileName = path.resolve(__dirname, 'some-platform-specific-file');
 
 fs.writeFile(fileName, os.platform, function(err) {

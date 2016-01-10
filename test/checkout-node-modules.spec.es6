@@ -98,8 +98,7 @@ describe(`npm-git-lock`, function() {
         .then(() => done(), done);
     });
 
-    it(`should not commit platform-specific build artifacts to version control when run in cross-platform mode`, function(done) {
-        // This test is failing now.
+    it(`should build but not commit platform-specific build artifacts to version control when run in cross-platform mode`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
         let packageJson = JSON.stringify({
@@ -121,13 +120,26 @@ describe(`npm-git-lock`, function() {
             crossPlatform: true
         })
         .then(() => {
+            // the platform-specific file should be there after building the project
+            expect(fs.readdirSync(`${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module`)).to.contain(`some-platform-specific-file`);
+        })
+        .then(() => {
             process.chdir(`${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module`);
             return git(`ls-tree --name-only -r HEAD`, (output) => {
                 return output.trim().split("\n");
             });
         })
         .then((files) => {
+            // the platform-specific file should not be in version control
             expect(files).to.not.contain('some-platform-specific-file');
+        })
+        .then(() => {
+            process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
+            return git(`check-ignore fake-platform-specific-module/some-platform-specific-file`)
+            .catch(() => {
+                // When `git check-ignore` exits with an error, that means the file is not ignored.
+                expect.fail(`Platform-specific file should be ignored by Git.`);
+            });
         })
         .then(() => done(), done);
     });

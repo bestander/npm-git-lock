@@ -10,9 +10,10 @@
   "dependencies": {
     "del": "^1.1.1",
     "es6-promisify": "^1.1.1",
+    "exec-then": "^1.3.1",
     "git-promise": "^0.2.0",
+    "lodash": "^3.10.1",
     "loglevel": "^1.2.0",
-    "npmi": "^1.0.1",
     "optimist": "^0.6.1"
   },
   "devDependencies": {
@@ -24,9 +25,10 @@
   "bundledDependencies": [
     "del",
     "es6-promisify",
+    "exec-then",
     "git-promise",
+    "lodash",
     "loglevel",
-    "npmi",
     "optimist"
   ],
   "scripts": {
