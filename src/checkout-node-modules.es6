@@ -87,8 +87,8 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
 
     function npmRunCommand(cmd, args) {
         let loglevel = [`--log-level=${verbose ? 'warn' : 'silent'}`];
-        return exec(['npm', cmd].concat(loglevel).concat(args), {verbose}, (std) => {
-            return std.stdout.split('\n');
+        return exec(['npm', cmd].concat(loglevel).concat(args), {verbose}, (std, deferred) => {
+            deferred.resolve(std.stdout.split('\n'));
         });
     }
 
@@ -132,10 +132,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         })
         .then(() => {
             if (crossPlatform) {
-                log.debug(`Cross-platform`);
                 return rebuildAndIgnorePlatformSpecific();
-            } else {
-                log.debug(`Not cross-platform`);
             }
         })
         .then(() => {
