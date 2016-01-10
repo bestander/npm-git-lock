@@ -117,6 +117,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
 
     function installPackagesTagAndPustToRemote() {
         log.debug(`Requested tag does not exist, remove everything from node_modules and do npm install`);
+        process.chdir(`${cwd}/node_modules`);
         return git(`checkout master`)
         .then(() => {
             return delPromise([`**`, `!.git/`])
