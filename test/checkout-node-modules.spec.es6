@@ -243,6 +243,40 @@ describe(`npm-git-lock`, function() {
         .then(() => done(), done);
     });
 
+    it(`should not rebuild platform-specific modules if node_modules is already at the right commit`, function(done) {
+
+        process.chdir(`${cwd}/test/${testProjectFolder}`);
+        let packageJson = JSON.stringify({
+            "name": "my-project",
+            "version": "2.0.0",
+            "dependencies": {
+                "fake-platform-specific-module": "file:../fixtures/fake-platform-specific-module"
+            },
+            "devDependencies": {
+            },
+            "author": "Jan Poeschko",
+            "license": "MIT"
+        });
+        fs.writeFileSync(`package.json`, packageJson);
+        let checkout = require(`../src/checkout-node-modules`);
+        return checkout(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`, verbose: true, crossPlatform: true
+        })
+        .then(() => {
+            // delete the platform specific file
+            execSync(`rm ${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module/some-platform-specific-file`);
+            // do the same install another time
+            return checkout(`${cwd}/test/${testProjectFolder}`, {
+                repo: `${cwd}/test/${nodeModulesRemoteRepo}`, verbose: true, crossPlatform: true
+            })
+        })
+        .then(() => {
+            // we don't expect a rebuild, i.e. the platform-specific file is still not there
+            expect(fs.readdirSync(`${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module`)).not.to.contain(`some-platform-specific-file`);
+        })
+        .then(() => done(), done);
+    });
+
     it(`should replace / in package json hash with _`, function(done) {
 
         let fakeHash = "/1g8hUui8sC2JtwIkvw/GmyQYsA=";

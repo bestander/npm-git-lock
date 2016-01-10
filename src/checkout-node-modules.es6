@@ -16,6 +16,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
 
     let packageJsonSha1;
     let packageJsonVersion;
+    let leaveAsIs = false;
     log.setLevel(verbose ? `debug`: `info`);
     return readFilePromise(`${cwd}/package.json`, `utf-8`)
     .then((packageJsonContent) => {
@@ -33,16 +34,28 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             return git(`git remote -v`)
             .then((remoteCommandOutput) => {
                 if (remoteCommandOutput.indexOf(repo) !== -1) {
-                    // repo is in remotes, let`s pull the required version
-                    log.debug(`Remote exists, fetching from it`);
-                    return git(`git fetch -t ${repo}`);
+                    // repo is in remotes
+                    return git(`tag -l --points-at HEAD`)
+                    .then((tags) => {
+                        if (tags.split('\n').indexOf(packageJsonSha1) >= 0) {
+                            // if the current HEAD is at the right commit, don't change anything
+                            log.debug(`${repo} is already at tag ${packageJsonSha1}, leaving as is`);
+                            leaveAsIs = true;
+                        } else {
+                            log.debug(`Remote exists, fetching from it`);
+                            return git(`git fetch -t ${repo}`);
+                        }
+                    });
                 }
                 return cloneRepo();
             });
         })
         .catch(cloneRepo)
     })
-    .then(() => {
+    .then((tags) => {
+        if (leaveAsIs) {
+            return;
+        }
         log.debug(`${repo} is in node_modules cwd, checking out ${packageJsonSha1} tag`);
         process.chdir(`${cwd}/node_modules`);
         return git(`checkout tags/${packageJsonSha1}`)
