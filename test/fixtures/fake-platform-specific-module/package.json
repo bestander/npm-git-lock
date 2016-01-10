@@ -1,0 +1,13 @@
+{
+  "name": "fake-platform-specific-module",
+  "version": "1.0.0",
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+    "install": "node install.js"
+  },
+  "author": "Jan Poeschko",
+  "license": "MIT"
+}

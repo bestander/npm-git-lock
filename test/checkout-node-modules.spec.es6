@@ -98,6 +98,40 @@ describe(`npm-git-lock`, function() {
         .then(() => done(), done);
     });
 
+    it(`should not commit platform-specific build artifacts to version control when run in cross-platform mode`, function(done) {
+        // This test is failing now.
+
+        process.chdir(`${cwd}/test/${testProjectFolder}`);
+        let packageJson = JSON.stringify({
+            "name": "my-project",
+            "version": "1.0.0",
+            "dependencies": {
+                "fake-platform-specific-module": "file:../fixtures/fake-platform-specific-module"
+            },
+            "devDependencies": {
+            },
+            "author": "Jan Poeschko",
+            "license": "MIT"
+        });
+        fs.writeFileSync(`package.json`, packageJson);
+
+        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true,
+            crossPlatform: true
+        })
+        .then(() => {
+            process.chdir(`${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module`);
+            return git(`ls-tree --name-only -r HEAD`, (output) => {
+                return output.trim().split("\n");
+            });
+        })
+        .then((files) => {
+            expect(files).to.not.contain('some-platform-specific-file');
+        })
+        .then(() => done(), done);
+    });
+
     it(`should checkout node_modules from remote repo resetting all local changes`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
