@@ -21,9 +21,10 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
     return readFilePromise(`${cwd}/package.json`, `utf-8`)
     .then((packageJsonContent) => {
         // replace / in hash with _ because git does not allow leading / in tags
+        let packageJson = JSON.parse(packageJsonContent);
         packageJsonSha1 = crypto.createHash(`sha1`).update(packageJsonContent).digest(`base64`).replace(/\//g, "_");
-        packageJsonVersion = packageJsonContent.version;
-        log.debug(`Sha1 of package.json is ${packageJsonSha1}`);
+        packageJsonVersion = packageJson.version;
+        log.debug(`Sha1 of package.json (version ${packageJsonVersion}) is ${packageJsonSha1}`);
         return packageJsonSha1;
     })
     .then(() => {
