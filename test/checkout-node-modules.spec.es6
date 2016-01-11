@@ -63,7 +63,10 @@ describe(`npm-git-lock`, function() {
         });
         fs.writeFileSync(`package.json`, packageJson);
 
-        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
+        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true}
+        )
         .then(() => {
             process.chdir(`${cwd}/test/${nodeModulesRemoteRepo}`);
             return git(`show-ref --tags`, (output) => {
@@ -91,6 +94,52 @@ describe(`npm-git-lock`, function() {
             let packageInstalled = JSON.parse(fs.readFileSync(`${cwd}/test/${testProjectFolder}/node_modules/fake-module/package.json`, `utf-8`));
             let packageInRepo = JSON.parse(fs.readFileSync(`${cwd}/test/fixtures/fake-module/package.json`, `utf-8`));
             expect(packageInstalled.name).to.equal(packageInRepo.name);
+        })
+        .then(() => done(), done);
+    });
+
+    it(`should build but not commit platform-specific build artifacts to version control when run in cross-platform mode`, function(done) {
+
+        process.chdir(`${cwd}/test/${testProjectFolder}`);
+        let packageJson = JSON.stringify({
+            "name": "my-project",
+            "version": "1.0.0",
+            "dependencies": {
+                "fake-platform-specific-module": "file:../fixtures/fake-platform-specific-module"
+            },
+            "devDependencies": {
+            },
+            "author": "Jan Poeschko",
+            "license": "MIT"
+        });
+        fs.writeFileSync(`package.json`, packageJson);
+
+        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true,
+            crossPlatform: true
+        })
+        .then(() => {
+            // the platform-specific file should be there after building the project
+            expect(fs.readdirSync(`${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module`)).to.contain(`some-platform-specific-file`);
+        })
+        .then(() => {
+            process.chdir(`${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module`);
+            return git(`ls-tree --name-only -r HEAD`, (output) => {
+                return output.trim().split("\n");
+            });
+        })
+        .then((files) => {
+            // the platform-specific file should not be in version control
+            expect(files).to.not.contain('some-platform-specific-file');
+        })
+        .then(() => {
+            process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
+            return git(`check-ignore fake-platform-specific-module/some-platform-specific-file`)
+            .catch(() => {
+                // When `git check-ignore` exits with an error, that means the file is not ignored.
+                expect.fail(`Platform-specific file should be ignored by Git.`);
+            });
         })
         .then(() => done(), done);
     });
@@ -128,7 +177,10 @@ describe(`npm-git-lock`, function() {
         execSync(`git commit -a -m "another commit that should be ignored" `);
         execSync(`git tag SOMERANDOMTAG`);
 
-        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
+        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true
+        })
         .then(() => {
             // there is the same tag in project`s node_modules
             process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
@@ -170,7 +222,10 @@ describe(`npm-git-lock`, function() {
         let packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(packageJson).digest(`base64`);
         execSync(`git tag ${packageJsonSha1}`);
 
-        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
+        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true
+        })
         .then(() => {
             // there is the same tag in project`s node_modules
             process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
@@ -184,6 +239,40 @@ describe(`npm-git-lock`, function() {
         .then(() => {
             // we don`t expect npm install was called
             expect(fs.readdirSync(`${cwd}/test/${testProjectFolder}/node_modules`)).not.to.contain(`fake-module`);
+        })
+        .then(() => done(), done);
+    });
+
+    it(`should not rebuild platform-specific modules if node_modules is already at the right commit`, function(done) {
+
+        process.chdir(`${cwd}/test/${testProjectFolder}`);
+        let packageJson = JSON.stringify({
+            "name": "my-project",
+            "version": "2.0.0",
+            "dependencies": {
+                "fake-platform-specific-module": "file:../fixtures/fake-platform-specific-module"
+            },
+            "devDependencies": {
+            },
+            "author": "Jan Poeschko",
+            "license": "MIT"
+        });
+        fs.writeFileSync(`package.json`, packageJson);
+        let checkout = require(`../src/checkout-node-modules`);
+        return checkout(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`, verbose: true, crossPlatform: true
+        })
+        .then(() => {
+            // delete the platform specific file
+            execSync(`rm ${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module/some-platform-specific-file`);
+            // do the same install another time
+            return checkout(`${cwd}/test/${testProjectFolder}`, {
+                repo: `${cwd}/test/${nodeModulesRemoteRepo}`, verbose: true, crossPlatform: true
+            })
+        })
+        .then(() => {
+            // we don't expect a rebuild, i.e. the platform-specific file is still not there
+            expect(fs.readdirSync(`${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module`)).not.to.contain(`some-platform-specific-file`);
         })
         .then(() => done(), done);
     });
@@ -224,7 +313,10 @@ describe(`npm-git-lock`, function() {
         let packageJsonSha1 = fakeHash.replace(/\//g, "_");
         execSync(`git tag ${packageJsonSha1}`);
 
-        checkoutNodeModules(`${cwd}/test/${testProjectFolder}`, `${cwd}/test/${nodeModulesRemoteRepo}`, true)
+        checkoutNodeModules(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true}
+        )
         .then(() => {
             // there is the same tag in project`s node_modules
             process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
