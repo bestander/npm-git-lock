@@ -1,6 +1,6 @@
 # npm-git-lock
 
-[ ![Codeship Status for bestander/npm-git-lock](https://codeship.com/projects/80df76f0-c8be-0132-4536-627bbcd2f5ed/status?branch=master)](https://codeship.com/projects/75106)  
+[![Circle CI](https://circleci.com/gh/bestander/npm-git-lock.svg?style=svg)](https://circleci.com/gh/bestander/npm-git-lock)
 
 A CLI tool to lock all node_modules dependencies to a separate git repository.
 
