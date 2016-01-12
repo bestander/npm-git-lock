@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "del": "^1.1.1",
+    "es6-promise": "^3.0.2",
     "es6-promisify": "^1.1.1",
     "git-promise": "^0.2.0",
     "lodash": "^3.10.1",
@@ -24,6 +25,7 @@
   },
   "bundledDependencies": [
     "del",
+    "es6-promise",
     "es6-promisify",
     "git-promise",
     "lodash",

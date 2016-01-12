@@ -8,6 +8,8 @@ let crypto = require(`crypto`);
 let shell = require(`shelljs`);
 let uniq = require(`lodash/array/uniq`);
 
+require('es6-promise').polyfill();
+
 let readFilePromise = promisify(fs.readFile);
 let delPromise = promisify(del);
 let statPromise = promisify(fs.stat);
