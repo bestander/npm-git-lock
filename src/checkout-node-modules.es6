@@ -1,5 +1,6 @@
 'use strict';
-let git = require(`git-promise`);
+
+let gitPromise = require(`git-promise`);
 let del = require(`del`);
 let fs = require(`fs`);
 let promisify = require(`es6-promisify`);
@@ -92,6 +93,14 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             log.debug(`cloning ${repo}`);
             return git(`clone ${repo} node_modules`);
         })
+    }
+
+    function git(cmd) {
+        return gitPromise(cmd).catch((error) => {
+            // report any Git errors immediately
+            log.info(`Git command '${cmd}' failed:\n${error.stdout}`);
+            throw error;
+        });
     }
 
     function gitGetUntracked() {
