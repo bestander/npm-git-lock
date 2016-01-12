@@ -1,11 +1,11 @@
 'use strict';
 let git = require(`git-promise`);
-let exec = require(`exec-then`);
 let del = require(`del`);
 let fs = require(`fs`);
 let promisify = require(`es6-promisify`);
 let log = require(`loglevel`);
 let crypto = require(`crypto`);
+let shell = require(`shelljs`);
 let uniq = require(`lodash/array/uniq`);
 
 let readFilePromise = promisify(fs.readFile);
@@ -99,10 +99,17 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         })
     }
 
-    function npmRunCommand(cmd, args) {
-        let loglevel = [`--log-level=${verbose ? 'warn' : 'silent'}`];
-        return exec(['npm', cmd].concat(loglevel).concat(args), {verbose}, (std, deferred) => {
-            deferred.resolve(std.stdout.split('\n'));
+    function npmRunCommand(npmCommand, args, {silent}={}) {
+        let logLevel = [`--log-level=${verbose ? 'warn' : 'silent'}`];
+        let command = ['npm', npmCommand].concat(logLevel).concat(args || []);
+        return new Promise((resolve, reject) => {
+            let result = shell.exec(command.join(' '), {silent});
+            if (result.code !== 0) {
+                log.info(`npm command '${npmCommand}' failed:\n${result.output}`);
+                reject(new Error(`Running npm returned error code ${result.code}`));
+            } else {
+                resolve(result.output.split('\n'));
+            }
         });
     }
 
@@ -151,9 +158,10 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             }
         })
         .then(() => {
-            return npmRunCommand(`--version`);
+            return npmRunCommand(`--version`, [], {silent: true});
         })
         .then((npmVersion) => {
+            log.debug(`Ran npm ${npmVersion[0]}, committing`);
             process.chdir(`${cwd}/node_modules`);
             return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmVersion[0]}"`);
         })
