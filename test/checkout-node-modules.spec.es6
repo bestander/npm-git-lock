@@ -4,6 +4,7 @@ var execSync = require(`child_process`).execSync;
 let git = require(`git-promise`);
 var rewire = require("rewire");
 let expect = require(`chai`).expect;
+let stringify = require(`json-stable-stringify`);
 
 /**
  * Those are integration tests that depend on Git and npm being available in CLI.
@@ -50,7 +51,7 @@ describe(`npm-git-lock`, function() {
     it(`should do a fresh npm install and push results to remote repo master branch when get repo in node_modules is not present`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = JSON.stringify({
+        let packageJson = stringify({
             "name": "my-project",
             "version": "1.0.0",
             "dependencies": {
@@ -101,7 +102,7 @@ describe(`npm-git-lock`, function() {
     it(`should build but not commit platform-specific build artifacts to version control when run in cross-platform mode`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = JSON.stringify({
+        let packageJson = stringify({
             "name": "my-project",
             "version": "1.0.0",
             "dependencies": {
@@ -147,7 +148,7 @@ describe(`npm-git-lock`, function() {
     it(`should checkout node_modules from remote repo resetting all local changes`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = JSON.stringify({
+        let packageJson = stringify({
             "name": "my-project",
             "version": "1.0.0",
             "dependencies": {
@@ -205,7 +206,7 @@ describe(`npm-git-lock`, function() {
     it(`should not do an npm install if remote repo master branch already has a tag with package.json hash`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = JSON.stringify({
+        let packageJson = stringify({
             "name": "my-project",
             "version": "2.0.0",
             "dependencies": {
@@ -246,7 +247,7 @@ describe(`npm-git-lock`, function() {
     it(`should not rebuild platform-specific modules if node_modules is already at the right commit`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = JSON.stringify({
+        let packageJson = stringify({
             "name": "my-project",
             "version": "2.0.0",
             "dependencies": {
@@ -296,7 +297,7 @@ describe(`npm-git-lock`, function() {
         });
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = JSON.stringify({
+        let packageJson = stringify({
             "name": "my-project",
             "version": "2.0.0",
             "dependencies": {

@@ -7,6 +7,7 @@ let promisify = require(`es6-promisify`);
 let log = require(`loglevel`);
 let crypto = require(`crypto`);
 let shell = require(`shelljs`);
+let stringify = require(`json-stable-stringify`);
 let uniq = require(`lodash/array/uniq`);
 
 require('es6-promise').polyfill();
@@ -23,11 +24,14 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
     log.setLevel(verbose ? `debug`: `info`);
     return readFilePromise(`${cwd}/package.json`, `utf-8`)
     .then((packageJsonContent) => {
-        // replace / in hash with _ because git does not allow leading / in tags
         let packageJson = JSON.parse(packageJsonContent);
-        packageJsonSha1 = crypto.createHash(`sha1`).update(packageJsonContent).digest(`base64`).replace(/\//g, "_");
+        // compute a hash based on the stable-stringified contents of package.json
+        // (`packageJsonContent` might differ on different platforms, depending on line endings etc.)
+        let stableContent = stringify(packageJson);
+        // replace / in hash with _ because git does not allow leading / in tags
+        packageJsonSha1 = crypto.createHash(`sha1`).update(stableContent).digest(`base64`).replace(/\//g, "_");
         packageJsonVersion = packageJson.version;
-        log.debug(`Sha1 of package.json (version ${packageJsonVersion}) is ${packageJsonSha1}`);
+        log.debug(`SHA-1 of package.json (version ${packageJsonVersion}) is ${packageJsonSha1}`);
         return packageJsonSha1;
     })
     .then(() => {
