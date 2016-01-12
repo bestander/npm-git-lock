@@ -156,6 +156,9 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         process.chdir(`${cwd}/node_modules`);
         return git(`checkout master`)
         .then(() => {
+            return git(`pull`);
+        })
+        .then(() => {
             return delPromise([`**`, `!.git/`])
         })
         .then(() => {
