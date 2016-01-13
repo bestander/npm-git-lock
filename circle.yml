@@ -3,6 +3,7 @@ machine:
     version: 4
 test:
   override:
+    - npm install -g npm@3
     - git config --global user.email "<>"
     - git config --global user.name "Test User"
     - npm test
