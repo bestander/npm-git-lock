@@ -3,6 +3,7 @@
 let gitPromise = require(`git-promise`);
 let del = require(`del`);
 let fs = require(`fs`);
+let os = require(`os`);
 let promisify = require(`es6-promisify`);
 let log = require(`loglevel`);
 let crypto = require(`crypto`);
@@ -15,6 +16,10 @@ require('es6-promise').polyfill();
 let readFilePromise = promisify(fs.readFile);
 let delPromise = promisify(del);
 let statPromise = promisify(fs.stat);
+
+const PLATFORM_SPECIFIC_MODULES = {
+    'fsevents': 'darwin'
+};
 
 module.exports = (cwd, {repo, verbose, crossPlatform}) => {
 
@@ -129,9 +134,21 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
     }
 
     function rebuildAndIgnorePlatformSpecific() {
-        log.debug(`Rebuilding package in ${cwd}`);
+        log.debug(`Rebuilding packages in ${cwd}`);
         process.chdir(`${cwd}`);
-        return npmRunCommand('rebuild')
+        let packages = fs.readdirSync(`${cwd}/node_modules`);
+        let platform = os.platform();
+        let packagesToRebuild = packages.filter(pkg => {
+            let platformSpecific = PLATFORM_SPECIFIC_MODULES[pkg];
+            if (!platformSpecific || platformSpecific === platform) {
+                return true;
+            } else {
+                log.debug(`Skipping platform-specific build of ${pkg} on ${platform}`);
+                return false;
+            }
+        });
+        packagesToRebuild.sort();
+        return npmRunCommand('rebuild', packagesToRebuild)
         .then(() => {
             process.chdir(`${cwd}/node_modules`);
             return gitGetUntracked();
