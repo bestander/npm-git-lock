@@ -90,7 +90,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
     .catch((error) => {
         process.chdir(`${cwd}`);
         log.info(`Failed to synchronise node_modules with ${repo}: ${error}`);
-        throw error;
+        process.exit(1);
     });
 
     function cloneRepo() {
