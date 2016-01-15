@@ -173,6 +173,9 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         process.chdir(`${cwd}/node_modules`);
         return git(`checkout master`)
         .then(() => {
+            return git(`stash`);
+        })
+        .then(() => {
             return git(`pull`);
         })
         .then(() => {
