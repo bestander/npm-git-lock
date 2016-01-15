@@ -21,6 +21,14 @@ const PLATFORM_SPECIFIC_MODULES = {
     'fsevents': 'darwin'
 };
 
+/**
+ * Conservative estimate of the maximum number of characters for a single shell line.
+ * According to https://support.microsoft.com/en-us/kb/830473 this is no less than 2047.
+ * Platforms other than Windows shouldn't pose a problem.
+ * @type {number}
+ */
+const MAX_SHELL_LENGTH = 2000;
+
 module.exports = (cwd, {repo, verbose, crossPlatform}) => {
 
     let packageJsonSha1;
@@ -119,18 +127,41 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         })
     }
 
-    function npmRunCommand(npmCommand, args, {silent}={}) {
+    function npmRunCommands(npmCommand, listOfArgs, {silent}={}) {
         let logLevel = [`--log-level=${verbose ? 'warn' : 'silent'}`];
-        let command = ['npm', npmCommand].concat(logLevel).concat(args || []);
         return new Promise((resolve, reject) => {
-            let result = shell.exec(command.join(' '), {silent});
-            if (result.code !== 0) {
-                log.info(`npm command '${npmCommand}' failed:\n${result.output}`);
-                reject(new Error(`Running npm returned error code ${result.code}`));
+            let output = [];
+            listOfArgs.every((args) => {
+                let command = ['npm', npmCommand].concat(logLevel).concat(args || []);
+                let result = shell.exec(command.join(' '), {silent});
+                if (result.code !== 0) {
+                    log.info(`npm command '${npmCommand}' failed:\n${result.output}`);
+                    reject(new Error(`Running npm returned error code ${result.code}`));
+                    return false;
+                } else {
+                    output.push(result.output);
+                    return true;
+                }
+            });
+            resolve(output.join('\n'));
+        });
+    }
+
+    function npmRunCommand(npmCommand, args, {silent}={}) {
+        return npmRunCommands(npmCommand, [args], {silent});
+    }
+
+    function groupPackages(packages) {
+        var groups = [[]];
+        packages.forEach((pkg) => {
+            let existingGroup = groups[groups.length - 1].concat([pkg]);
+            if (existingGroup.join(' ').length < MAX_SHELL_LENGTH - 20) {
+                groups[groups.length - 1] = existingGroup;
             } else {
-                resolve(result.output.split('\n'));
+                groups.push([pkg]);
             }
         });
+        return groups;
     }
 
     function rebuildAndIgnorePlatformSpecific() {
@@ -148,7 +179,8 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             }
         });
         packagesToRebuild.sort();
-        return npmRunCommand('rebuild', packagesToRebuild)
+        let packageGroups = groupPackages(packagesToRebuild);
+        return npmRunCommands('rebuild', packageGroups)
         .then(() => {
             process.chdir(`${cwd}/node_modules`);
             return gitGetUntracked();
@@ -198,10 +230,11 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         .then(() => {
             return npmRunCommand(`--version`, [], {silent: true});
         })
-        .then((npmVersion) => {
-            log.debug(`Ran npm ${npmVersion[0]}, committing`);
+        .then((versionOutput) => {
+            let npmVersion = versionOutput.trim();
+            log.debug(`Ran npm ${npmVersion}, committing`);
             process.chdir(`${cwd}/node_modules`);
-            return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmVersion[0]}"`);
+            return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmVersion}"`);
         })
         .then(() => {
             log.debug(`Committed, adding tag`);
