@@ -209,7 +209,8 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
     }
 
     function installPackagesTagAndPushToRemote() {
-        log.debug(`Requested tag does not exist, remove everything from node_modules and do npm install`);
+        log.debug(`Requested tag does not exist, removing everything from node_modules and running 'npm install'`);
+        log.debug(`(This might take a few minutes. Please be patient!)`);
         process.chdir(`${cwd}/node_modules`);
         return git(`checkout master`)
         .then(() => {
@@ -232,7 +233,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             return npmRunCommand(`install`, crossPlatform ? ['--ignore-scripts'] : []);
         })
         .then(() => {
-            log.debug(`All packages installed`);
+            log.debug(`All packages installed, adding files to repo`);
             process.chdir(`${cwd}/node_modules`);
             return git(`add .`);
         })
