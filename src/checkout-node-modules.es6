@@ -211,9 +211,15 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         process.chdir(`${cwd}/node_modules`);
         return git(`checkout master`)
         .then(() => {
+            // Stash any local changes before pulling.
+            // This doesn't seem very elegant... Maybe we should rather hard-reset master to origin/master.
+            // This just seems a little "safer".
+            // We should also think about what happens if origin/master diverges between here and the actual push.
             return git(`stash`);
         })
         .then(() => {
+            // Pull first so that the push later does not (or at least is much less likely to)
+            // fail due to diverged branches.
             return git(`pull`);
         })
         .then(() => {
