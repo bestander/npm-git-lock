@@ -5,6 +5,8 @@ let git = require(`git-promise`);
 var rewire = require("rewire");
 let expect = require(`chai`).expect;
 let stringify = require(`json-stable-stringify`);
+let shell = require(`shelljs`);
+let semver = require(`semver`);
 
 /**
  * Those are integration tests that depend on Git and npm being available in CLI.
@@ -21,6 +23,9 @@ describe(`npm-git-lock`, function() {
     let cwd = process.cwd();
     let nodeModulesRemoteRepo = `remote-repo`;
     let testProjectFolder = `test-project-folder`;
+
+    const npmVersion = shell.exec(`npm --version`, {silent: true}).output;
+    const npm3 = semver.gte(npmVersion, '3.0.0');
 
     beforeEach(() => {
         process.chdir(`${cwd}/test`);
@@ -99,7 +104,9 @@ describe(`npm-git-lock`, function() {
         .then(() => done(), done);
     });
 
-    it(`should build but not commit platform-specific build artifacts to version control when run in cross-platform mode`, function(done) {
+    // Apparently, only npm@3 runs the custom "install" script of fake-platform-specific-module.
+    // So we only support --cross-platform on npm>=3 and disable the related tests on npm<3.
+    npm3 && it(`should build but not commit platform-specific build artifacts to version control when run in cross-platform mode`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
         let packageJson = stringify({
@@ -244,7 +251,7 @@ describe(`npm-git-lock`, function() {
         .then(() => done(), done);
     });
 
-    it(`should not rebuild platform-specific modules if node_modules is already at the right commit`, function(done) {
+    npm3 && it(`should not rebuild platform-specific modules if node_modules is already at the right commit`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
         let packageJson = stringify({
