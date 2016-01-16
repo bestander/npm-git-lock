@@ -17,6 +17,12 @@ let readFilePromise = promisify(fs.readFile);
 let delPromise = promisify(del);
 let statPromise = promisify(fs.stat);
 
+/**
+ * List of platforms that we know only work on a certain platform.
+ * Unfortunately, this is necessary since `npm rebuild` doesn't ignore build failures in optional dependencies
+ * like it should (cf. https://github.com/npm/npm/issues/10335).
+ * Obviously, this list is not complete, but contains just what was necessary to make this work for "us".
+ */
 const PLATFORM_SPECIFIC_MODULES = {
     'fsevents': 'darwin'
 };
