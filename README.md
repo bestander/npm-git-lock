@@ -81,6 +81,8 @@ Inspired by [this post](https://medium.com/@g_syner/for-the-most-part-i-really-l
 3. Run `npm rebuild` to create any platform-specific files.
 4. Run `git status --untracked-files=all` to list all files that have been generated in the previous step. Add these files to `.gitignore`.
 
+`--cross-platform` is only supported on `npm` version >= 3, since npm 2 doesn't run custom install scripts as it should during `npm rebuild` (cf. [this CI failure](https://circleci.com/gh/bestander/npm-git-lock/11)).
+
 
 ## Amazing features  
 
