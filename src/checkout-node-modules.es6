@@ -85,7 +85,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         }
         log.debug(`${repo} is in node_modules cwd, checking out ${packageJsonSha1} tag`);
         process.chdir(`${cwd}/node_modules`);
-        return git(`checkout tags/${packageJsonSha1}`)
+        return git(`checkout tags/${packageJsonSha1}`, {silent: true})
         .then(() => {
             log.debug(`Cleanup checked out commit`);
             return git(`clean -df`);
@@ -118,10 +118,12 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         })
     }
 
-    function git(cmd) {
+    function git(cmd, {silent}={}) {
         return gitPromise(cmd).catch((error) => {
-            // report any Git errors immediately
-            log.info(`Git command '${cmd}' failed:\n${error.stdout}`);
+            if (!silent) {
+                // report any Git errors immediately
+                log.info(`Git command '${cmd}' failed:\n${error.stdout}`);
+            }
             throw error;
         });
     }
