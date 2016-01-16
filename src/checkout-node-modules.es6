@@ -95,7 +95,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
                 return rebuildAndIgnorePlatformSpecific();
             }
         })
-        .catch(installPackagesTagAndPustToRemote);
+        .catch(installPackagesTagAndPushToRemote);
     })
     .then(() => {
         process.chdir(`${cwd}`);
@@ -206,7 +206,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         })
     }
 
-    function installPackagesTagAndPustToRemote() {
+    function installPackagesTagAndPushToRemote() {
         log.debug(`Requested tag does not exist, remove everything from node_modules and do npm install`);
         process.chdir(`${cwd}/node_modules`);
         return git(`checkout master`)
