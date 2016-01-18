@@ -9,25 +9,32 @@
   },
   "dependencies": {
     "del": "^1.1.1",
+    "es6-promise": "^3.0.2",
     "es6-promisify": "^1.1.1",
     "git-promise": "^0.2.0",
+    "json-stable-stringify": "^1.0.0",
+    "lodash": "^3.10.1",
     "loglevel": "^1.2.0",
-    "npmi": "^1.0.1",
-    "optimist": "^0.6.1"
+    "optimist": "^0.6.1",
+    "shelljs": "^0.5.3"
   },
   "devDependencies": {
+    "babel": "^4.7.16",
     "chai": "^2.1.2",
     "mocha": "^2.2.1",
-    "babel": "^4.7.16",
-    "rewire": "^2.3.4"
+    "rewire": "^2.3.4",
+    "semver": "^5.1.0"
   },
   "bundledDependencies": [
     "del",
+    "es6-promise",
     "es6-promisify",
     "git-promise",
+    "json-stable-stringify",
+    "lodash",
     "loglevel",
-    "npmi",
-    "optimist"
+    "optimist",
+    "shelljs"
   ],
   "scripts": {
     "test": "mocha --compilers es6:babel/register",
