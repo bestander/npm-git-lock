@@ -1,6 +1,7 @@
 'use strict';
 
 let gitPromise = require(`git-promise`);
+let gitUtil = require(`git-promise/util`);
 let del = require(`del`);
 let fs = require(`fs`);
 let os = require(`os`);
@@ -35,7 +36,7 @@ const PLATFORM_SPECIFIC_MODULES = {
  */
 const MAX_SHELL_LENGTH = 2000;
 
-module.exports = (cwd, {repo, verbose, crossPlatform}) => {
+module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
 
     let packageJsonSha1;
     let packageJsonVersion;
@@ -133,7 +134,34 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         return git(`status --porcelain --untracked-files=all`)
         .then(result => {
             return result.split('\n').filter(line => line && line.startsWith('??')).map(line => line.substr(3));
-        })
+        });
+    }
+
+    function isNonEmpty(value) {
+        return value && value.length;
+    }
+
+    /**
+     * Determines if the working tree of a Git repository in the current directory has any changes.
+     */
+    function gitHasChanges() {
+        return git(`status --porcelain --untracked-files=all`)
+        .then(result => {
+            let {index, workingTree} = gitUtil.extractStatus(result);
+            if (index) {
+                if (isNonEmpty(index.modified) || isNonEmpty(index.added) || isNonEmpty(index.deleted) ||
+                        isNonEmpty(index.renamed) || isNonEmpty(index.copied)) {
+                    return true;
+                }
+            }
+            if (workingTree) {
+                if (isNonEmpty(workingTree.modified) || isNonEmpty(workingTree.added) ||
+                        isNonEmpty(workingTree.deleted)) {
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 
     function npmRunCommands(npmCommand, listOfArgs, {silent}={}) {
@@ -226,7 +254,10 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             return git(`pull`);
         })
         .then(() => {
-            return delPromise([`**`, `!.git/`])
+            if (!incrementalInstall) {
+                log.debug(`Removing everything from node_modules`);
+                return delPromise([`**`, `!.git/`]);
+            }
         })
         .then(() => {
             log.debug(`Running 'npm install'`);
@@ -249,17 +280,29 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         })
         .then((versionOutput) => {
             let npmVersion = versionOutput.trim();
-            log.debug(`Ran npm ${npmVersion}, committing`);
+            log.debug(`Ran npm ${npmVersion}`);
             process.chdir(`${cwd}/node_modules`);
-            return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmVersion}"`);
+            return gitHasChanges()
+            .then((hasChanges) => {
+                if (hasChanges) {
+                    // Only make another commit if there are actual changes (avoiding an "empty" commit).
+                    // Changes in the project's package.json might not lead to changes in installed dependencies
+                    // (e.g. because only other metadata was changed).
+                    // Then running npm-git-lock will not install new dependencies, if --incremental-install is set.
+                    return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmVersion}"`)
+                    .then(() => {
+                        log.debug(`Committed`);
+                    });
+                }
+            });
         })
         .then(() => {
-            log.debug(`Committed, adding tag`);
-            return git(`tag ${packageJsonSha1}`);
-        })
-        .then(() => {
-            log.debug(`Pushing tag ${packageJsonSha1} to ${repo}`);
-            return git(`push ${repo} master --tags`);
+            log.debug(`Adding tag`);
+            return git(`tag ${packageJsonSha1}`)
+            .then(() => {
+                log.debug(`Pushing tag ${packageJsonSha1} to ${repo}`);
+                return git(`push ${repo} master --tags`);
+            });
         });
     }
 };

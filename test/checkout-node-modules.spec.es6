@@ -340,4 +340,62 @@ describe(`npm-git-lock`, function() {
         })
         .then(done, done);
     });
+
+    it(`should not perform a fresh install when --incremental-install is set`, (done) => {
+
+        function writeFakeModule(version) {
+            let moduleJson = stringify({
+                "name": "fake-changing-module",
+                "version": version,
+                "author": "Jan Poeschko",
+                "license": "MIT"
+            });
+            fs.writeFileSync(`${cwd}/test/${testProjectFolder}/fake-changing-module/package.json`, moduleJson);
+        }
+
+        function writePackage(version) {
+            let packageJson = stringify({
+                "name": "my-project",
+                "version": version,
+                "dependencies": {
+                    "fake-changing-module": `file:./fake-changing-module`
+                },
+                "author": "Jan Poeschko",
+                "license": "MIT"
+            });
+            fs.writeFileSync(`${cwd}/test/${testProjectFolder}/package.json`, packageJson);
+        }
+
+        process.chdir(`${cwd}/test/${testProjectFolder}`);
+        execSync(`mkdir fake-changing-module`);
+        writePackage('1.0.0');
+        writeFakeModule('1.0.0');
+
+        const npmGitLock = require(`../src/checkout-node-modules`);
+
+        npmGitLock(`${cwd}/test/${testProjectFolder}`, {
+            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+            verbose: true
+        })
+        .then(() => {
+            const packageInstalled = JSON.parse(fs.readFileSync(`${cwd}/test/${testProjectFolder}/node_modules/fake-changing-module/package.json`, `utf-8`));
+            expect(packageInstalled.version).to.equal('1.0.0');
+        })
+        .then(() => {
+            writePackage('1.1.0');
+            writeFakeModule('1.1.0');
+        })
+        .then(() => {
+            return npmGitLock(`${cwd}/test/${testProjectFolder}`, {
+                repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
+                verbose: true,
+                incrementalInstall: true
+            });
+        })
+        .then(() => {
+            const packageInstalled = JSON.parse(fs.readFileSync(`${cwd}/test/${testProjectFolder}/node_modules/fake-changing-module/package.json`, `utf-8`));
+            expect(packageInstalled.version).to.equal('1.0.0');
+        })
+        .then(() => done(), done);
+    });
 });
