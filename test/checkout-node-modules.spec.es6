@@ -291,10 +291,10 @@ describe(`npm-git-lock`, function() {
         let checkoutNodeModules = rewire("../src/checkout-node-modules");
         checkoutNodeModules.__set__('crypto', {
             createHash: () => {
-                console.log("CREATE HASH")
+                console.log("CREATE HASH");
                 return {
                     update: () => {
-                        console.log("CALLED UPDATE")
+                        console.log("CALLED UPDATE");
                         return {
                             digest: () => fakeHash
                         };

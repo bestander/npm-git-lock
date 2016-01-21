@@ -115,7 +115,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         .then(() => {
             log.debug(`cloning ${repo}`);
             return git(`clone ${repo} node_modules`);
-        })
+        });
     }
 
     function git(cmd, {silent}={}) {
@@ -205,7 +205,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             ignored = uniq(ignored);
             fs.writeFileSync('.gitignore', ignored.join('\n'), {encoding: 'utf8'});
             return git(`add .gitignore`);
-        })
+        });
     }
 
     function installPackagesTagAndPushToRemote() {
@@ -258,7 +258,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         .then(() => {
             log.debug(`Pushing tag ${packageJsonSha1} to ${repo}`);
             return git(`push ${repo} master --tags`);
-        })
+        });
     }
 };
 
