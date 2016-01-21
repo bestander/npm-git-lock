@@ -341,7 +341,7 @@ describe(`npm-git-lock`, function() {
         .then(done, done);
     });
 
-    it(`should not perform a fresh install when --incremental-install is set`, (done) => {
+    npm3 && it(`should not perform a fresh install when --incremental-install is set`, (done) => {
 
         function writeFakeModule(version) {
             let moduleJson = stringify({

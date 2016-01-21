@@ -34,8 +34,10 @@ Beware of possible breaking changes in the future, if you seek stability, obtain
 
     --verbose               [-v] Print progress log messages
     --repo                  Git URL to repository with node_modules content  [required]
-    --cross-platform        Run in cross-platform mode
-    --incremental-install   Keep previous modules instead of always performing a fresh npm install
+    --cross-platform        Run in cross-platform mode (npm 3 only)
+    --incremental-install   Keep previous modules instead of always performing a fresh npm install (npm 3 only)
+
+`npm-git-lock` works with both npm 2 and 3, although the options `--cross-platform` and `--incremental-install` are only supported on npm 3.
 
 
 ## Why you need it
