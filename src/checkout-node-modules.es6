@@ -41,6 +41,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
     let packageJsonVersion;
     let leaveAsIs = false;
     log.setLevel(verbose ? `debug`: `info`);
+    log.debug(`Updating ${cwd}/node_modules using repo ${repo}`);
     return readFilePromise(`${cwd}/package.json`, `utf-8`)
     .then((packageJsonContent) => {
         let packageJson = JSON.parse(packageJsonContent);
@@ -83,7 +84,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         if (leaveAsIs) {
             return;
         }
-        log.debug(`${repo} is in node_modules cwd, checking out ${packageJsonSha1} tag`);
+        log.debug(`Remote ${repo} is in node_modules, checking out ${packageJsonSha1} tag`);
         process.chdir(`${cwd}/node_modules`);
         return git(`checkout tags/${packageJsonSha1}`, {silent: true})
         .then(() => {
@@ -109,11 +110,11 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
 
     function cloneRepo() {
         log.debug(`Remote ${repo} is not present in ${cwd}/node_modules/.git repo`);
-        log.debug(`Removing ${cwd}/node_modules cwd`);
+        log.debug(`Removing ${cwd}/node_modules`);
         process.chdir(`${cwd}`);
         return delPromise([`node_modules/`])
         .then(() => {
-            log.debug(`cloning ${repo}`);
+            log.debug(`Cloning ${repo}`);
             return git(`clone ${repo} node_modules`);
         });
     }
@@ -209,8 +210,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
     }
 
     function installPackagesTagAndPushToRemote() {
-        log.debug(`Requested tag does not exist, removing everything from node_modules and running 'npm install'`);
-        log.debug(`(This might take a few minutes. Please be patient!)`);
+        log.debug(`Requested tag does not exist, installing node_modules`);
         process.chdir(`${cwd}/node_modules`);
         // Stash any local changes before switching to master.
         // This doesn't seem very elegant... Maybe we should rather hard-reset master to origin/master.
@@ -229,6 +229,8 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             return delPromise([`**`, `!.git/`])
         })
         .then(() => {
+            log.debug(`Running 'npm install'`);
+            log.debug(`This might take a few minutes -- please be patient`);
             process.chdir(`${cwd}`);
             return npmRunCommand(`install`, crossPlatform ? ['--ignore-scripts'] : []);
         })
