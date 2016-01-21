@@ -105,17 +105,18 @@ Note that when running `npm-git-lock` after the merge (to produce commit3), only
 
 ## Amazing features  
 
-With this package you get:  
-1. Minimum dependency on npm servers availability for repeated builds which is very common for CI systems  
-2. No noise in your main project Pull Requests, all packages are committed to a separate git repository that does not need to be reviewed or maintained  
-3. If the separate git repository for packages gets too large and slows down your builds after a few years, you can just create a new one, saving the old one for patches if you need  
-4. Using it does not interfere with the recommended npm workflow, you can use it only on your CI system with no side effects for your dev environment or mix it with shrinkwrapping  
+With this package you get:
+
+1. Minimum dependency on npm servers availability for repeated builds which is very common for CI systems.
+2. No noise in your main project Pull Requests, all packages are committed to a separate git repository that does not need to be reviewed or maintained.
+3. If the separate git repository for packages gets too large and slows down your builds after a few years, you can just create a new one, saving the old one for patches if you need.
+4. Using it does not interfere with the recommended npm workflow, you can use it only on your CI system with no side effects for your dev environment or mix it with shrinkwrapping.
 5. You can have different node_modules repositories for different OS. Your CI is likely to be linux while your dev machines may be mac or windows. You can set up 3 repositories for them and use them independently.  
-6. And it is blazing fast  
+6. And it is blazing fast.
 
 ## Troubleshoot
 
-If you see this kind of error in your CI.  
+If you see this kind of error in your CI: 
 
 ```
 Cloning into 'node_modules'...
@@ -135,7 +136,7 @@ Just add those two commands before `npm-git-lock` call.
 ## Contribution
 
 Please give me your feedback and send Pull Requests.  
-Unit tests rely on `require(`child_process`).execSync` command that works in node 0.11+.  
+Unit tests rely on ```require(`child_process`).execSync``` command that works in node 0.11+.  
 
 ## License MIT
 
