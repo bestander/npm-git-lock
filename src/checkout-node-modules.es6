@@ -299,6 +299,9 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
         .then(() => {
             log.debug(`Adding tag`);
             return git(`tag ${packageJsonSha1}`)
+            .catch(() => {
+                // Ignore errors while tagging (it's not a problem if the tag already exists)
+            })
             .then(() => {
                 log.debug(`Pushing tag ${packageJsonSha1} to ${repo}`);
                 return git(`push ${repo} master --tags`);
