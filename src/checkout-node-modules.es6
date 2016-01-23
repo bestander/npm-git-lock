@@ -1,6 +1,7 @@
 'use strict';
 
 let gitPromise = require(`git-promise`);
+let gitUtil = require(`git-promise/util`);
 let del = require(`del`);
 let fs = require(`fs`);
 let os = require(`os`);
@@ -35,12 +36,13 @@ const PLATFORM_SPECIFIC_MODULES = {
  */
 const MAX_SHELL_LENGTH = 2000;
 
-module.exports = (cwd, {repo, verbose, crossPlatform}) => {
+module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
 
     let packageJsonSha1;
     let packageJsonVersion;
     let leaveAsIs = false;
     log.setLevel(verbose ? `debug`: `info`);
+    log.debug(`Updating ${cwd}/node_modules using repo ${repo}`);
     return readFilePromise(`${cwd}/package.json`, `utf-8`)
     .then((packageJsonContent) => {
         let packageJson = JSON.parse(packageJsonContent);
@@ -83,7 +85,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         if (leaveAsIs) {
             return;
         }
-        log.debug(`${repo} is in node_modules cwd, checking out ${packageJsonSha1} tag`);
+        log.debug(`Remote ${repo} is in node_modules, checking out ${packageJsonSha1} tag`);
         process.chdir(`${cwd}/node_modules`);
         return git(`checkout tags/${packageJsonSha1}`, {silent: true})
         .then(() => {
@@ -109,13 +111,13 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
 
     function cloneRepo() {
         log.debug(`Remote ${repo} is not present in ${cwd}/node_modules/.git repo`);
-        log.debug(`Removing ${cwd}/node_modules cwd`);
+        log.debug(`Removing ${cwd}/node_modules`);
         process.chdir(`${cwd}`);
         return delPromise([`node_modules/`])
         .then(() => {
-            log.debug(`cloning ${repo}`);
+            log.debug(`Cloning ${repo}`);
             return git(`clone ${repo} node_modules`);
-        })
+        });
     }
 
     function git(cmd, {silent}={}) {
@@ -132,7 +134,34 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         return git(`status --porcelain --untracked-files=all`)
         .then(result => {
             return result.split('\n').filter(line => line && line.startsWith('??')).map(line => line.substr(3));
-        })
+        });
+    }
+
+    function isNonEmpty(value) {
+        return value && value.length;
+    }
+
+    /**
+     * Determines if the working tree of a Git repository in the current directory has any changes.
+     */
+    function gitHasChanges() {
+        return git(`status --porcelain --untracked-files=all`)
+        .then(result => {
+            let {index, workingTree} = gitUtil.extractStatus(result);
+            if (index) {
+                if (isNonEmpty(index.modified) || isNonEmpty(index.added) || isNonEmpty(index.deleted) ||
+                        isNonEmpty(index.renamed) || isNonEmpty(index.copied)) {
+                    return true;
+                }
+            }
+            if (workingTree) {
+                if (isNonEmpty(workingTree.modified) || isNonEmpty(workingTree.added) ||
+                        isNonEmpty(workingTree.deleted)) {
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 
     function npmRunCommands(npmCommand, listOfArgs, {silent}={}) {
@@ -205,20 +234,19 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             ignored = uniq(ignored);
             fs.writeFileSync('.gitignore', ignored.join('\n'), {encoding: 'utf8'});
             return git(`add .gitignore`);
-        })
+        });
     }
 
     function installPackagesTagAndPushToRemote() {
-        log.debug(`Requested tag does not exist, removing everything from node_modules and running 'npm install'`);
-        log.debug(`(This might take a few minutes. Please be patient!)`);
+        log.debug(`Requested tag does not exist, installing node_modules`);
         process.chdir(`${cwd}/node_modules`);
-        return git(`checkout master`)
+        // Stash any local changes before switching to master.
+        // This doesn't seem very elegant... Maybe we should rather hard-reset master to origin/master.
+        // This just seems a little "safer".
+        // We should also think about what happens if origin/master diverges between here and the actual push.
+        return git(`stash save --include-untracked`)
         .then(() => {
-            // Stash any local changes before pulling.
-            // This doesn't seem very elegant... Maybe we should rather hard-reset master to origin/master.
-            // This just seems a little "safer".
-            // We should also think about what happens if origin/master diverges between here and the actual push.
-            return git(`stash`);
+            return git(`checkout master`);
         })
         .then(() => {
             // Pull first so that the push later does not (or at least is much less likely to)
@@ -226,9 +254,14 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
             return git(`pull`);
         })
         .then(() => {
-            return delPromise([`**`, `!.git/`])
+            if (!incrementalInstall) {
+                log.debug(`Removing everything from node_modules`);
+                return delPromise([`**`, `!.git/`]);
+            }
         })
         .then(() => {
+            log.debug(`Running 'npm install'`);
+            log.debug(`This might take a few minutes -- please be patient`);
             process.chdir(`${cwd}`);
             return npmRunCommand(`install`, crossPlatform ? ['--ignore-scripts'] : []);
         })
@@ -247,18 +280,33 @@ module.exports = (cwd, {repo, verbose, crossPlatform}) => {
         })
         .then((versionOutput) => {
             let npmVersion = versionOutput.trim();
-            log.debug(`Ran npm ${npmVersion}, committing`);
+            log.debug(`Ran npm ${npmVersion}`);
             process.chdir(`${cwd}/node_modules`);
-            return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmVersion}"`);
+            return gitHasChanges()
+            .then((hasChanges) => {
+                if (hasChanges) {
+                    // Only make another commit if there are actual changes (avoiding an "empty" commit).
+                    // Changes in the project's package.json might not lead to changes in installed dependencies
+                    // (e.g. because only other metadata was changed).
+                    // Then running npm-git-lock will not install new dependencies, if --incremental-install is set.
+                    return git(`commit -a -m "sealing package.json dependencies of version ${packageJsonVersion}, using npm ${npmVersion}"`)
+                    .then(() => {
+                        log.debug(`Committed`);
+                    });
+                }
+            });
         })
         .then(() => {
-            log.debug(`Committed, adding tag`);
-            return git(`tag ${packageJsonSha1}`);
-        })
-        .then(() => {
-            log.debug(`Pushing tag ${packageJsonSha1} to ${repo}`);
-            return git(`push ${repo} master --tags`);
-        })
+            log.debug(`Adding tag`);
+            return git(`tag ${packageJsonSha1}`)
+            .catch(() => {
+                // Ignore errors while tagging (it's not a problem if the tag already exists)
+            })
+            .then(() => {
+                log.debug(`Pushing tag ${packageJsonSha1} to ${repo}`);
+                return git(`push ${repo} master --tags`);
+            });
+        });
     }
 };
 

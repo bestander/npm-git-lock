@@ -32,9 +32,12 @@ Beware of possible breaking changes in the future, if you seek stability, obtain
 
 ### Options:
 
-    --verbose         [-v] Print progress log messages
-    --repo            Git URL to repository with node_modules content  [required]
-    --cross-platform  Run in cross-platform mode
+    --verbose               [-v] Print progress log messages
+    --repo                  Git URL to repository with node_modules content  [required]
+    --cross-platform        Run in cross-platform mode (npm 3 only)
+    --incremental-install   Keep previous modules instead of always performing a fresh npm install (npm 3 only)
+
+`npm-git-lock` works with both npm 2 and 3, although the options `--cross-platform` and `--incremental-install` are only supported on npm 3.
 
 
 ## Why you need it
@@ -64,8 +67,8 @@ The algorithm is simple:
 1. Check if node_modules folder is present in the working directory  
 2. If node_modules exists check if there is a separate git repository in it  
 3. Calculate sha1 hash from package.json in base64 format  
-4. If remote repo from [2] has a commit tagged with sha1 from [3] then check it out clean, no npm install is required  
-5. Otherwise remove everything from node_modules, do a clean npm install, commit, tag with sha1 from [3] and push to remote repo  
+4. If remote repo from [2] has a commit tagged with sha1 from [3] then check it out clean, no `npm install` is required
+5. Otherwise remove everything from node_modules (unless `--incremental-install` is set, in which case only uncommitted changes will be stashed away), do a clean `npm install`, commit, tag with sha1 from [3] and push to remote repo
 6. Next time you build with the same package.json, it is guaranteed that you get node_modules from the first run  
 
 After this you end up with a reliable and reproducible source controlled node_modules folder.      
@@ -85,20 +88,37 @@ Inspired by [this post](https://medium.com/@g_syner/for-the-most-part-i-really-l
 
 `--cross-platform` is only supported on `npm` version >= 3, since npm 2 doesn't run custom install scripts as it should during `npm rebuild` (cf. [this CI failure](https://circleci.com/gh/bestander/npm-git-lock/11)).
 
+### Incremental installs
+
+By default, `npm-git-lock` will perform a completely fresh `npm install` whenever there is any change to package.json (i.e., there is no commit in the node_modules repository tagged with the sha1 of package.json). However, that might not always be desired, since all dependencies might change (as long as their version is still within the range specified in package.json).
+
+To get a behavior more similar to `npm shrinkwrap`, you can use the option `--incremental-install`. When installing modules, it will reuse modules that have already been committed to the node_modules repository and only run `npm install` "on top of them".
+
+A potential caveat is that modules are always fetched from the latest state (the master branch) of the node_modules repository. If there are dependencies introduced in a previous commit but not on the latest master HEAD, they will be freshly installed.
+
+*Example*: In your project, you work on a branch *A* that declares a new dependency *depA* in package.json. In parallel, you have a branch *B* declaring a new dependency *depB*. Then you merge them both back into master. Assuming you run `npm-git-lock` in each step, the history of your central node_modules repository will look like this (from recent to older):
+
+ * [commit3, master HEAD] *depA* + *depB*
+ * [commit2] *depB*
+ * [commit1] *depA*
+
+Note that when running `npm-git-lock` after the merge (to produce commit3), only *depB* was fetched from the previous state. For *depA*, a fresh install was performed.
+
 
 ## Amazing features  
 
-With this package you get:  
-1. Minimum dependency on npm servers availability for repeated builds which is very common for CI systems  
-2. No noise in your main project Pull Requests, all packages are committed to a separate git repository that does not need to be reviewed or maintained  
-3. If the separate git repository for packages gets too large and slows down your builds after a few years, you can just create a new one, saving the old one for patches if you need  
-4. Using it does not interfere with the recommended npm workflow, you can use it only on your CI system with no side effects for your dev environment or mix it with shrinkwrapping  
+With this package you get:
+
+1. Minimum dependency on npm servers availability for repeated builds which is very common for CI systems.
+2. No noise in your main project Pull Requests, all packages are committed to a separate git repository that does not need to be reviewed or maintained.
+3. If the separate git repository for packages gets too large and slows down your builds after a few years, you can just create a new one, saving the old one for patches if you need.
+4. Using it does not interfere with the recommended npm workflow, you can use it only on your CI system with no side effects for your dev environment or mix it with shrinkwrapping.
 5. You can have different node_modules repositories for different OS. Your CI is likely to be linux while your dev machines may be mac or windows. You can set up 3 repositories for them and use them independently.  
-6. And it is blazing fast  
+6. And it is blazing fast.
 
 ## Troubleshoot
 
-If you see this kind of error in your CI.  
+If you see this kind of error in your CI: 
 
 ```
 Cloning into 'node_modules'...
@@ -118,7 +138,7 @@ Just add those two commands before `npm-git-lock` call.
 ## Contribution
 
 Please give me your feedback and send Pull Requests.  
-Unit tests rely on `require(`child_process`).execSync` command that works in node 0.11+.  
+Unit tests rely on ```require(`child_process`).execSync``` command that works in node 0.11+.  
 
 ## License MIT
 
