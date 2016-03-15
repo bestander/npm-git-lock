@@ -10,7 +10,7 @@ Read a [post](https://medium.com/@bestander_nz/my-node-modules-are-in-git-again-
 
 - Tracks changes in package.json file
 - When a change is found makes a clean install of all dependencies and commits and pushes node_modules to a remote repository
-- Works independently from npm and can be used only on CI server keeping dev environment simpler
+- Works independently from your npm workflow and may be used on a CI server only keeping your dev environment simpler
 
 ## How to use
 
@@ -139,6 +139,11 @@ Just add those two commands before `npm-git-lock` call.
 
 Please give me your feedback and send Pull Requests.  
 Unit tests rely on ```require(`child_process`).execSync``` command that works in node 0.11+.  
+
+## Future plans (up for grabs)
+
+- Replace .es6 extension with .js
+- Switch to [shelljs](https://github.com/shelljs/shelljs) from promises API. Promises are still too heavy for such a file oriented CLI tool
 
 ## Change Log
 
