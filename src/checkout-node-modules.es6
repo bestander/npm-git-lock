@@ -165,7 +165,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
     }
 
     function npmRunCommands(npmCommand, listOfArgs, {silent}={}) {
-        let logLevel = [`--log-level=${verbose ? 'warn' : 'silent'}`];
+        let logLevel = [`--loglevel=${verbose ? 'warn' : 'silent'}`];
         return new Promise((resolve, reject) => {
             let output = [];
             listOfArgs.every((args) => {
