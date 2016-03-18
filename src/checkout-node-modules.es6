@@ -87,7 +87,9 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
         }
         log.debug(`Remote ${repo} is in node_modules, checking out ${packageJsonSha1} tag`);
         process.chdir(`${cwd}/node_modules`);
-        return git(`checkout tags/${packageJsonSha1}`, {silent: true})
+        return git(`rev-list ${packageJsonSha1}`, { silent: true })
+        .then(() => runNpmScript('preinstall'))
+        .then(() => git(`checkout tags/${packageJsonSha1}`, {silent: true}))
         .then(() => {
             log.debug(`Cleanup checked out commit`);
             return git(`clean -df`);
@@ -97,6 +99,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
                 return rebuildAndIgnorePlatformSpecific();
             }
         })
+        .then(() => runNpmScript('postinstall'))
         .catch(installPackagesTagAndPushToRemote);
     })
     .then(() => {
@@ -188,6 +191,17 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
         return npmRunCommands(npmCommand, [args], {silent});
     }
 
+    function runNpmScript(scriptName) {
+        return readFilePromise(`${cwd}/package.json`, `utf-8`)
+        .then((packageJsonContent) => {
+            let packageJson = JSON.parse(packageJsonContent);
+            if (packageJson.scripts && packageJson.scripts[scriptName]) {
+                log.debug(`Running ${scriptName} script...`);
+                return npmRunCommand(`run`, scriptName);
+            }
+        });
+    }
+
     function groupPackages(packages) {
         var groups = [[]];
         packages.forEach((pkg) => {
@@ -260,10 +274,25 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
             }
         })
         .then(() => {
+            process.chdir(`${cwd}`);
+            return Promise.resolve();
+        })
+        .then(() => {
+            if (crossPlatform) {
+                return runNpmScript('preinstall');
+            }
+            return Promise.resolve();
+        })
+        .then(() => {
             log.debug(`Running 'npm install'`);
             log.debug(`This might take a few minutes -- please be patient`);
-            process.chdir(`${cwd}`);
             return npmRunCommand(`install`, crossPlatform ? ['--ignore-scripts'] : []);
+        })
+        .then(() => {
+            if (crossPlatform) {
+                return runNpmScript('postinstall');
+            }
+            return Promise.resolve();
         })
         .then(() => {
             log.debug(`All packages installed, adding files to repo`);
@@ -309,6 +338,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
         });
     }
 };
+
 
 
 
