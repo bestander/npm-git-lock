@@ -16,7 +16,8 @@
     "lodash": "^3.10.1",
     "loglevel": "^1.2.0",
     "optimist": "^0.6.1",
-    "shelljs": "^0.5.3"
+    "shelljs": "^0.5.3",
+    "string.prototype.startswith": "^0.2.0"
   },
   "devDependencies": {
     "babel": "^4.7.16",
