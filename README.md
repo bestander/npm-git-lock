@@ -148,7 +148,7 @@ Unit tests rely on ```require(`child_process`).execSync``` command that works in
 ## Change Log
 
 ### [3.2.1](https://github.com/bestander/npm-git-lock/releases/tag/3.2.1) - 2016-04-14
-- [Fixed](https://github.com/bestander/npm-git-lock/pull/24) fixed support for Node 0.12
+- [Fixed](https://github.com/bestander/npm-git-lock/pull/24) support for Node 0.12
 
 ### [3.2.0](https://github.com/bestander/npm-git-lock/releases/tag/3.2.0) - 2016-03-24
 - [Fixed](https://github.com/bestander/npm-git-lock/pull/21) run `preinstall` and `postinstall` scripts even in `--cross-platform` mode
