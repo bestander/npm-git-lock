@@ -13,7 +13,7 @@ let stringify = require(`json-stable-stringify`);
 let uniq = require(`lodash/array/uniq`);
 
 require('es6-promise').polyfill();
-require('string.prototype.startsWith');
+require('string.prototype.startswith');
 
 let readFilePromise = promisify(fs.readFile);
 let delPromise = promisify(del);
