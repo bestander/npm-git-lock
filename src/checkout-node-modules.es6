@@ -37,7 +37,7 @@ const PLATFORM_SPECIFIC_MODULES = {
  */
 const MAX_SHELL_LENGTH = 2000;
 
-module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
+module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, production}) => {
 
     let packageJsonSha1;
     let packageJsonVersion;
@@ -287,7 +287,14 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall}) => {
         .then(() => {
             log.debug(`Running 'npm install'`);
             log.debug(`This might take a few minutes -- please be patient`);
-            return npmRunCommand(`install`, crossPlatform ? ['--ignore-scripts'] : []);
+            var options = [];
+            if (crossPlatform) {
+                options.push('--ignore-scripts');
+            }
+            if (production) {
+                options.push('--production');
+            }
+            return npmRunCommand(`install`, options);
         })
         .then(() => {
             if (crossPlatform) {

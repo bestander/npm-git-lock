@@ -16,7 +16,8 @@ checkoutNodeModules(process.cwd(), {
     verbose: argv.verbose,
     repo: argv.repo,
     crossPlatform: argv['cross-platform'],
-    incrementalInstall: argv['incremental-install']
+    incrementalInstall: argv['incremental-install'],
+    production: argv['production']
 })
 .then(function () {
     process.exit(0);
