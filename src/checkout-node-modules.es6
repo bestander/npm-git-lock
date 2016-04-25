@@ -285,15 +285,16 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, produc
             return Promise.resolve();
         })
         .then(() => {
-            log.debug(`Running 'npm install'`);
-            log.debug(`This might take a few minutes -- please be patient`);
             var options = [];
             if (crossPlatform) {
+                log.debug(`Running 'npm install'`);
                 options.push('--ignore-scripts');
             }
             if (production) {
+                log.debug(`Running 'npm install --production'`);
                 options.push('--production');
             }
+            log.debug(`This might take a few minutes -- please be patient`);
             return npmRunCommand(`install`, options);
         })
         .then(() => {
