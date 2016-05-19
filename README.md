@@ -15,7 +15,7 @@ Read a [post](https://medium.com/@bestander_nz/my-node-modules-are-in-git-again-
 ## How to use
 
 ```
-sudo npm install -g npm-git-lock
+npm install -g npm-git-lock
 cd [your work directory]  
 npm-git-lock --repo [git@bitbucket.org:your/dedicated/node_modules/git/repository.git] -v
 
@@ -24,7 +24,7 @@ npm-git-lock --repo [git@bitbucket.org:your/dedicated/node_modules/git/repositor
 If you don't want to depend on NPM connectivity when installing this module, you can install directly from github:
 
 ```
-sudo npm install -g https://raw.githubusercontent.com/bestander/npm-git-lock/master/npm-git-lock-latest.tgz
+npm install -g https://raw.githubusercontent.com/bestander/npm-git-lock/master/npm-git-lock-latest.tgz
 ```
 Beware of possible breaking changes in the future, if you seek stability, obtain a link to a particular commit with the
  .tgz file on GitHub.
