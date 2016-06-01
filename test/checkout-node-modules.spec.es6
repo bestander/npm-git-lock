@@ -56,7 +56,7 @@ describe(`npm-git-lock`, function() {
     it(`should do a fresh npm install and push results to remote repo master branch when get repo in node_modules is not present`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = {
+        const packageJson = {
             name: 'my-project',
             version: '1.0.0',
             dependencies: {
@@ -219,7 +219,7 @@ describe(`npm-git-lock`, function() {
     it(`should not do an npm install if remote repo master branch already has a tag with package.json hash`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = {
+        const packageJson = {
             name: 'my-project',
             version: '2.0.0',
             dependencies: {
