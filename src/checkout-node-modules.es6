@@ -49,7 +49,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, produc
         let packageJson = JSON.parse(packageJsonContent);
         // compute a hash based on the stable-stringified contents of package.json
         // (`packageJsonContent` might differ on different platforms, depending on line endings etc.)
-        let stableContent = stringify(packageJson);
+        let stableContent = stringify([packageJson.dependencies, packageJson.devDependencies]);
         // replace / in hash with _ because git does not allow leading / in tags
         packageJsonSha1 = crypto.createHash(`sha1`).update(stableContent).digest(`base64`).replace(/\//g, "_");
         packageJsonVersion = packageJson.version;

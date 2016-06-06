@@ -56,18 +56,23 @@ describe(`npm-git-lock`, function() {
     it(`should do a fresh npm install and push results to remote repo master branch when get repo in node_modules is not present`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = stringify({
-            "name": "my-project",
-            "version": "1.0.0",
-            "dependencies": {
-                "fake-module": "file:../fixtures/fake-module"
+        const packageJson = {
+            name: 'my-project',
+            version: '1.0.0',
+            dependencies: {
+                'fake-module': 'file:../fixtures/fake-module',
             },
-            "devDependencies": {
+            devDependencies: {
             },
-            "author": "Konstantin Raev",
-            "license": "MIT"
-        });
-        fs.writeFileSync(`package.json`, packageJson);
+            author: 'Konstantin Raev',
+            license: 'MIT',
+        };
+        fs.writeFileSync(`package.json`, JSON.stringify(packageJson));
+
+        const packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(stringify([
+            packageJson.dependencies,
+            packageJson.devDependencies,
+        ])).digest(`base64`);
 
         require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
             repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
@@ -81,7 +86,6 @@ describe(`npm-git-lock`, function() {
         })
         .then((refTags) => {
             // there is a tag in nodeModulesRemoteRepo with tagged with package.json hash
-            let packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(packageJson).digest(`base64`);
             expect(refTags.filter((refTag) => refTag.indexOf(`refs/tags/${packageJsonSha1}`) !== -1).length).to.equal(1);
         })
         .then(() => {
@@ -91,7 +95,6 @@ describe(`npm-git-lock`, function() {
         })
         .then((tag) => {
             // current tag in node_modules repo is package.json hash
-            let packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(packageJson).digest(`base64`);
             expect(packageJsonSha1).to.equal(tag.trim());
         })
         .then(() => {
@@ -155,19 +158,18 @@ describe(`npm-git-lock`, function() {
     it(`should checkout node_modules from remote repo resetting all local changes`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = stringify({
-            "name": "my-project",
-            "version": "1.0.0",
-            "dependencies": {
-                "fake-module": "file:../fixtures/fake-module"
+        const packageJson = {
+            name: 'my-project',
+            version: '1.0.0',
+            dependencies: {
+                'fake-module': 'file:../fixtures/fake-module',
             },
-            "devDependencies": {
+            devDependencies: {
             },
-            "author": "Konstantin Raev",
-            "license": "MIT"
-        });
-
-        fs.writeFileSync(`package.json`, packageJson);
+            author: 'Konstantin Raev',
+            license: 'MIT',
+        };
+        fs.writeFileSync(`package.json`, JSON.stringify(packageJson));
 
         // set up git in node_modules folder
         execSync(`git clone ${cwd}/test/${nodeModulesRemoteRepo} node_modules`);
@@ -175,7 +177,12 @@ describe(`npm-git-lock`, function() {
         execSync(`touch file2`);
         execSync(`git add .`);
         execSync(`git commit -a -m "node_modules is cached"`);
-        let packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(packageJson).digest(`base64`);
+
+        const packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(stringify([
+            packageJson.dependencies,
+            packageJson.devDependencies,
+        ])).digest(`base64`);
+
         execSync(`git tag ${packageJsonSha1}`);
         execSync(`git push origin master --tags`);
 
@@ -196,7 +203,6 @@ describe(`npm-git-lock`, function() {
         })
         .then((tag) => {
             // current tag in node_modules repo is package.json hash
-            let packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(packageJson).digest(`base64`);
             expect(packageJsonSha1).to.equal(tag.trim());
         })
         .then(() => {
@@ -213,21 +219,26 @@ describe(`npm-git-lock`, function() {
     it(`should not do an npm install if remote repo master branch already has a tag with package.json hash`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = stringify({
-            "name": "my-project",
-            "version": "2.0.0",
-            "dependencies": {
-                "fake-module": "file:../fixtures/fake-module"
+        const packageJson = {
+            name: 'my-project',
+            version: '2.0.0',
+            dependencies: {
+                'fake-module': 'file:../fixtures/fake-module',
             },
-            "devDependencies": {
+            devDependencies: {
             },
-            "author": "Konstantin Raev",
-            "license": "MIT"
-        });
-        fs.writeFileSync(`package.json`, packageJson);
+            author: 'Konstantin Raev',
+            license: 'MIT',
+        };
+        fs.writeFileSync(`package.json`, JSON.stringify(packageJson));
         // just add a tag to master branch then no npm innstallation is necessary
         process.chdir(`${cwd}/test/${nodeModulesRemoteRepo}`);
-        let packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(packageJson).digest(`base64`);
+
+        const packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(stringify([
+            packageJson.dependencies,
+            packageJson.devDependencies,
+        ])).digest(`base64`);
+
         execSync(`git tag ${packageJsonSha1}`);
 
         require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
@@ -241,7 +252,6 @@ describe(`npm-git-lock`, function() {
         })
         .then((tag) => {
             // current tag in node_modules repo is package.json hash
-            let packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(packageJson).digest(`base64`);
             expect(packageJsonSha1).to.equal(tag.trim());
         })
         .then(() => {
