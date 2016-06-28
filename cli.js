@@ -8,6 +8,7 @@ var argv = require('optimist')
 .describe('cross-platform', 'do not archive platform-specific files in node_modules')
 .describe('incremental-install', 'start npm install with last node_modules instead of clearing them')
 .describe('production', 'start npm install with production flag')
+.describe('fullText', 'Sha-1 calculated from full text of package.json')
 .alias('v', 'verbose')
 .demand(['repo']).argv;
 
@@ -18,7 +19,8 @@ checkoutNodeModules(process.cwd(), {
     repo: argv.repo,
     crossPlatform: argv['cross-platform'],
     incrementalInstall: argv['incremental-install'],
-    production: argv['production']
+    production: argv['production'],
+    fullText: argv['fullText']
 })
 .then(function () {
     process.exit(0);
