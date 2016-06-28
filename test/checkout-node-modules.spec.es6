@@ -76,8 +76,7 @@ describe(`npm-git-lock`, function() {
 
         require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
             repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
-            verbose: true,
-            onlyDependency: true}
+            verbose: true}
         )
         .then(() => {
             process.chdir(`${cwd}/test/${nodeModulesRemoteRepo}`);
@@ -195,8 +194,7 @@ describe(`npm-git-lock`, function() {
 
         require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
             repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
-            verbose: true,
-            onlyDependency: true
+            verbose: true
         })
         .then(() => {
             // there is the same tag in project`s node_modules
@@ -245,83 +243,6 @@ describe(`npm-git-lock`, function() {
 
         require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
             repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
-            verbose: true,
-            onlyDependency: true
-        })
-        .then(() => {
-            // there is the same tag in project`s node_modules
-            process.chdir(`${cwd}/test/${testProjectFolder}/node_modules`);
-            return git(`git describe --tags`);
-        })
-        .then((tag) => {
-            // current tag in node_modules repo is package.json hash
-            expect(packageJsonSha1).to.equal(tag.trim());
-        })
-        .then(() => {
-            // we don`t expect npm install was called
-            expect(fs.readdirSync(`${cwd}/test/${testProjectFolder}/node_modules`)).not.to.contain(`fake-module`);
-        })
-        .then(() => done(), done);
-    });
-
-    npm3 && it(`should not rebuild platform-specific modules if node_modules is already at the right commit`, function(done) {
-
-        process.chdir(`${cwd}/test/${testProjectFolder}`);
-        let packageJson = stringify({
-            "name": "my-project",
-            "version": "2.0.0",
-            "dependencies": {
-                "fake-platform-specific-module": "file:../fixtures/fake-platform-specific-module"
-            },
-            "devDependencies": {
-            },
-            "author": "Jan Poeschko",
-            "license": "MIT"
-        });
-        fs.writeFileSync(`package.json`, packageJson);
-        let checkout = require(`../src/checkout-node-modules`);
-        return checkout(`${cwd}/test/${testProjectFolder}`, {
-            repo: `${cwd}/test/${nodeModulesRemoteRepo}`, verbose: true, crossPlatform: true, onlyDependency: true
-        })
-        .then(() => {
-            // delete the platform specific file
-            execSync(`rm ${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module/some-platform-specific-file`);
-            // do the same install another time
-            return checkout(`${cwd}/test/${testProjectFolder}`, {
-                repo: `${cwd}/test/${nodeModulesRemoteRepo}`, verbose: true, crossPlatform: true, onlyDependency: true
-            })
-        })
-        .then(() => {
-            // we don't expect a rebuild, i.e. the platform-specific file is still not there
-            expect(fs.readdirSync(`${cwd}/test/${testProjectFolder}/node_modules/fake-platform-specific-module`)).not.to.contain(`some-platform-specific-file`);
-        })
-        .then(() => done(), done);
-    });
-
-    it(`(back compatible) should not do an npm install if remote repo master branch already has a tag with package.json hash`, function(done) {
-
-        process.chdir(`${cwd}/test/${testProjectFolder}`);
-        const packageJson = {
-            name: 'my-project',
-            version: '2.0.0',
-            dependencies: {
-                'fake-module': 'file:../fixtures/fake-module',
-            },
-            devDependencies: {
-            },
-            author: 'Konstantin Raev',
-            license: 'MIT',
-        };
-        fs.writeFileSync(`package.json`, JSON.stringify(packageJson));
-        // just add a tag to master branch then no npm innstallation is necessary
-        process.chdir(`${cwd}/test/${nodeModulesRemoteRepo}`);
-
-        const packageJsonSha1 = require(`crypto`).createHash(`sha1`).update(stringify(packageJson)).digest(`base64`);
-
-        execSync(`git tag ${packageJsonSha1}`);
-
-        require(`../src/checkout-node-modules`)(`${cwd}/test/${testProjectFolder}`, {
-            repo: `${cwd}/test/${nodeModulesRemoteRepo}`,
             verbose: true
         })
         .then(() => {
@@ -340,7 +261,7 @@ describe(`npm-git-lock`, function() {
         .then(() => done(), done);
     });
 
-    npm3 && it(`(back compatible) should not rebuild platform-specific modules if node_modules is already at the right commit`, function(done) {
+    npm3 && it(`should not rebuild platform-specific modules if node_modules is already at the right commit`, function(done) {
 
         process.chdir(`${cwd}/test/${testProjectFolder}`);
         let packageJson = stringify({
