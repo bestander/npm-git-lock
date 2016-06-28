@@ -37,7 +37,7 @@ const PLATFORM_SPECIFIC_MODULES = {
  */
 const MAX_SHELL_LENGTH = 2000;
 
-module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, production}) => {
+module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, production, fullText}) => {
 
     let packageJsonSha1;
     let packageJsonVersion;
@@ -47,9 +47,17 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, produc
     return readFilePromise(`${cwd}/package.json`, `utf-8`)
     .then((packageJsonContent) => {
         let packageJson = JSON.parse(packageJsonContent);
+        let stableContent;
         // compute a hash based on the stable-stringified contents of package.json
         // (`packageJsonContent` might differ on different platforms, depending on line endings etc.)
-        let stableContent = stringify([packageJson.dependencies, packageJson.devDependencies]);
+        if (fullText === true) {
+          log.debug(`Sha-1 calculated from full text of package.json.`);
+          stableContent = stringify(packageJson);
+        } else {
+          log.debug(`Sha-1 calculated from dependencies and devDependencies from package.json.`);
+          stableContent = stringify([packageJson.dependencies, packageJson.devDependencies]);
+        }
+
         // replace / in hash with _ because git does not allow leading / in tags
         packageJsonSha1 = crypto.createHash(`sha1`).update(stableContent).digest(`base64`).replace(/\//g, "_");
         packageJsonVersion = packageJson.version;
@@ -347,7 +355,3 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, produc
         });
     }
 };
-
-
-
-
