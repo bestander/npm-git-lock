@@ -32,11 +32,12 @@ Beware of possible breaking changes in the future, if you seek stability, obtain
 
 ### Options:
 
-    --verbose               [-v] Print progress log messages
-    --repo                  Git URL to repository with node_modules content  [required]
-    --cross-platform        Run in cross-platform mode (npm 3 only)
-    --incremental-install   Keep previous modules instead of always performing a fresh npm install (npm 3 only)
-    --production            Runs npm install with production flag
+    --verbose                 [-v] Print progress log messages
+    --repo                    Git URL to repository with node_modules content  [required]
+    --cross-platform          Run in cross-platform mode (npm 3 only)
+    --incremental-install     Keep previous modules instead of always performing a fresh npm install (npm 3 only)
+    --production              Runs npm install with production flag
+    --check-all-json-elements Sha-1 calculated from all elements in package.json instead of only dependencies and devDependencies
 
 `npm-git-lock` works with both npm 2 and 3, although the options `--cross-platform` and `--incremental-install` are only supported on npm 3.
 
@@ -45,15 +46,15 @@ Beware of possible breaking changes in the future, if you seek stability, obtain
 
 You need it to get reliable and reproducible builds of your Node.js/io.js projects.  
 
-### [Shrinkwrapping](https://docs.npmjs.com/cli/shrinkwrap) 
+### [Shrinkwrapping](https://docs.npmjs.com/cli/shrinkwrap)
 is the recommended option to "lock down" dependency tree of your application.  
 I have been using it throughout 2014 and there are too many inconveniences that accompany this technique:  
 1. Dependency on npm servers availability at every CI build. NPM [availability](http://status.npmjs.org/) is quite good in 2015 [watch a good talk](http://nodesummit.com/media/node-js-at-scale/) but you don't want to have another moving part when doing an urgent production build.  
 2. Managing of npm-shrinkwrap.json is not straightforward as of npm@2.4. It is promising to improve though.  
 3. Even though npm does not allow force updating packages without changing the version, packages can still be removed from the repository and you don't want to find that out when doing a production deployment.  
 4. There are lots of other complex variable things about shrinkwrapping like optional dependencies and the coming changes in npm@3.0 like flat node_modules folder structure.   
-  
-  
+
+
 ### Committing packages
 to your source version control system was recommended before shrinkwrapping but it is not anymore.    
 Nonetheless I think it is a more reliable option though with a few annoying details:  
@@ -119,7 +120,7 @@ With this package you get:
 
 ## Troubleshoot
 
-If you see this kind of error in your CI: 
+If you see this kind of error in your CI:
 
 ```
 Cloning into 'node_modules'...
@@ -148,14 +149,17 @@ Unit tests rely on ```require(`child_process`).execSync``` command that works in
 
 ## Change Log
 
+### [3.4.0](https://github.com/bestander/npm-git-lock/releases/tag/3.4.0) - 2016-06-30
+- [Feature](https://github.com/bestander/npm-git-lock/pull/32) support --check-all-json-elements
+
 ### [3.3.0](https://github.com/bestander/npm-git-lock/releases/tag/3.3.0) - 2016-04-26
-- [Fixed](https://github.com/bestander/npm-git-lock/pull/25) support --production
+- [Feature](https://github.com/bestander/npm-git-lock/pull/25) support --production
 
 ### [3.2.1](https://github.com/bestander/npm-git-lock/releases/tag/3.2.1) - 2016-04-14
 - [Fixed](https://github.com/bestander/npm-git-lock/pull/24) support for Node 0.12
 
 ### [3.2.0](https://github.com/bestander/npm-git-lock/releases/tag/3.2.0) - 2016-03-24
-- [Fixed](https://github.com/bestander/npm-git-lock/pull/21) run `preinstall` and `postinstall` scripts even in `--cross-platform` mode
+- [Feature](https://github.com/bestander/npm-git-lock/pull/21) run `preinstall` and `postinstall` scripts even in `--cross-platform` mode
 
 ### [3.1.1](https://github.com/bestander/npm-git-lock/releases/tag/3.1.1) - 2016-03-17
 - [Fixed](https://github.com/bestander/npm-git-lock/pull/19) `loglevel` argument for npm commands
@@ -165,4 +169,3 @@ Unit tests rely on ```require(`child_process`).execSync``` command that works in
 
 
 ## License MIT
-
