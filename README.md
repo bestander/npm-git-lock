@@ -26,9 +26,8 @@ If you don't want to depend on NPM connectivity when installing this module, you
 ```
 sudo npm install -g https://raw.githubusercontent.com/bestander/npm-git-lock/master/npm-git-lock-latest.tgz
 ```
-Beware of possible breaking changes in the future, if you seek stability, obtain a link to a particular commit with the
+- Beware of possible breaking changes in the future, if you seek stability, obtain a link to a particular commit with the
  .tgz file on GitHub.
-
 
 ### Options:
 
@@ -136,6 +135,17 @@ fatal: empty ident name (for <travis@testing-worker-linux-docker-2b1f3404-3362-l
 
 You need to configure `user.email` and `user.name` in the environment as shown in the error message.  
 Just add those two commands before `npm-git-lock` call.
+
+If you see this kind of error:
+
+```
+fatal: bad revision 'HEAD'
+fatal: bad revision 'HEAD'
+fatal: Needed a single revision
+You do not have the initial commit yet
+```
+
+You need to commit and push to the repote repository at least once before using `npm-git-lock`
 
 ## Contribution
 
