@@ -154,7 +154,7 @@ Git command 'tag -l --points-at HEAD' failed:
 error: unknown option `points-at'
 ```
 
-You need to upgrade `git` to version 1.8+.
+You need to upgrade `git` to version 1.7.10+.
 
 ## Contribution
 
