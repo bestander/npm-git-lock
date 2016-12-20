@@ -147,6 +147,15 @@ You do not have the initial commit yet
 
 You need to commit and push to the repote repository at least once before using `npm-git-lock`
 
+If you see this kind of error:
+
+```
+Git command 'tag -l --points-at HEAD' failed:
+error: unknown option `points-at'
+```
+
+You need to upgrade `git` to version 1.7.10+.
+
 ## Contribution
 
 Please give me your feedback and send Pull Requests.  
