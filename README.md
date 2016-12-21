@@ -154,6 +154,13 @@ Git command 'tag -l --points-at HEAD' failed:
 error: unknown option `points-at'
 ```
 
+or
+
+```
+Git command 'stash save --include-untracked' failed:
+error: unknown option for 'stash save': --include-untracked
+```
+
 You need to upgrade `git` to version 1.7.10+.
 
 ## Contribution
