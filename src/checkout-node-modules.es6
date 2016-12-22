@@ -145,7 +145,7 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, produc
     function gitGetUntracked() {
         return git(`status --porcelain --untracked-files=all`)
         .then(result => {
-            return result.split('\n').filter(line => line && line.startsWith('??')).map(line => line.substr(3));
+            return result.split('\n').filter(line => line && line.indexOf('??') === 0).map(line => line.substr(3));
         });
     }
 
