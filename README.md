@@ -175,6 +175,9 @@ Unit tests rely on ```require(`child_process`).execSync``` command that works in
 
 ## Change Log
 
+### [3.6.0](https://github.com/bestander/npm-git-lock/releases/tag/3.6.0) - 2018-02-20
+- [Feature](https://github.com/bestander/npm-git-lock/pull/36) fixed scoped packages for --cross-platform flag
+
 ### [3.5.0](https://github.com/bestander/npm-git-lock/releases/tag/3.5.0) - 2016-06-30
 - [Feature](https://github.com/bestander/npm-git-lock/pull/32) support --check-all-json-elements
 
