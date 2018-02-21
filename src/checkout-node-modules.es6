@@ -228,6 +228,20 @@ module.exports = (cwd, {repo, verbose, crossPlatform, incrementalInstall, produc
         log.debug(`Rebuilding packages in ${cwd}`);
         process.chdir(`${cwd}`);
         let packages = fs.readdirSync(`${cwd}/node_modules`);
+
+        // Add scoped packages, see https://github.com/bestander/npm-git-lock/issues/38
+        const reducer = (accumulator, currentPackage) => {
+            if (currentPackage[0] === '@') {
+                const scopedPackages = fs.readdirSync(`${cwd}/node_modules/${currentPackage}`)
+                    .map(p => `${currentPackage}/${p}`);
+                return accumulator.concat(scopedPackages);
+            } else {
+                accumulator.push(currentPackage);
+                return accumulator;
+            }
+        };
+        packages = packages.reduce(reducer, []);
+
         let platform = os.platform();
         let packagesToRebuild = packages.filter(pkg => {
             let platformSpecific = PLATFORM_SPECIFIC_MODULES[pkg];
