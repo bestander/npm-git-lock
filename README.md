@@ -10,7 +10,7 @@ Read a [post](https://medium.com/@bestander_nz/my-node-modules-are-in-git-again-
 
 I npm-git-lock was created a few years ago before Yarn and offline mirror feature: https://yarnpkg.com/blog/2016/11/24/offline-mirror/.
 
-There is even a feature to store built artifacts yarnpkg/yarn#5314, so I would suggest switching to Yarn as a more scalable solution.
+There is even a feature to [store built artifacts](https://github.com/yarnpkg/yarn/pull/5314), so I would suggest switching to Yarn as a more scalable solution.
 
 ## Features
 
