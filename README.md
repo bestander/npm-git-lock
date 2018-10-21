@@ -6,6 +6,12 @@ A CLI tool to lock all node_modules dependencies to a separate git repository.
 
 Read a [post](https://medium.com/@bestander_nz/my-node-modules-are-in-git-again-4fb18f5671a) why you may need it.
 
+# Update
+
+I npm-git-lock was created a few years ago before Yarn and offline mirror feature: https://yarnpkg.com/blog/2016/11/24/offline-mirror/.
+
+There is even a feature to store built artifacts yarnpkg/yarn#5314, so I would suggest switching to Yarn as a more scalable solution.
+
 ## Features
 
 - Tracks changes in package.json file
